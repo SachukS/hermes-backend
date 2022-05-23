@@ -16,6 +16,10 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
+                        .antMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**")
+                            .permitAll()
+                        .antMatchers("/swagger-ui")
+                            .permitAll()
                         .antMatchers("/api/v1/user/login", "/api/v1/user/register")
                             .permitAll()
                         .antMatchers("/**")
