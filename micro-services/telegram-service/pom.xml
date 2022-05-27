@@ -39,12 +39,10 @@
         <dependency>
             <groupId>it.tdlight</groupId>
             <artifactId>tdlight-java</artifactId>
-            <!-- don't specify the version here -->
         </dependency>
         <dependency>
             <groupId>it.tdlight</groupId>
             <artifactId>tdlight-natives-windows-amd64</artifactId>
-            <!-- don't specify the version here -->
         </dependency>
         <dependency>
             <groupId>com.hysens.hermes</groupId>

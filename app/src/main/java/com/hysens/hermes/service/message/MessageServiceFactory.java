@@ -2,7 +2,7 @@ package com.hysens.hermes.service.message;
 
 import com.hysens.hermes.common.service.MessageService;
 import com.hysens.hermes.exception.MessageServiceNotFoundForMessengerException;
-import com.hysens.hermes.telegram.TelegramService;
+import com.hysens.hermes.telegram.service.TelegramService;
 import com.hysens.hermes.whatsapp.WhatsAppService;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
