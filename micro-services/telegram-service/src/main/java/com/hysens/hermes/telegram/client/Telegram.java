@@ -1,6 +1,8 @@
 package com.hysens.hermes.telegram.client;
 
+import com.hysens.hermes.telegram.config.CommunicateMethod;
 import com.hysens.hermes.telegram.exception.TelegramPhoneNumberNotFoundException;
+import com.hysens.hermes.telegram.service.TelegramService;
 import it.tdlight.client.APIToken;
 import it.tdlight.client.AuthenticationData;
 import it.tdlight.client.CommandHandler;
@@ -10,9 +12,6 @@ import it.tdlight.common.utils.CantLoadLibrary;
 import it.tdlight.jni.TdApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -75,7 +74,6 @@ public class Telegram {
         }
     }
 
-
     private static void onUpdateNewMessage(TdApi.UpdateNewMessage update) {
         // Get the message content
 //        TdApi.MessageContent messageContent = update.message.content;
@@ -119,11 +117,19 @@ public class Telegram {
     }
     public static void findUserAndSend(String number, String message) {
         client.send(new TdApi.SearchUserByPhoneNumber(number), result -> {
+            CommunicateMethod call = null;
+            try {
+                call = TelegramService.communicateMethods.take();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             if (result.isError()) {
                 if (result.getError().code==404){
+                    call.setResult(false);
                     throw new TelegramPhoneNumberNotFoundException(number);
                 }
             }
+            call.setResult(true);
             client.send(new TdApi.CreatePrivateChat(result.get().id, false), result1 -> {
                 sendMessage(result1.get().id, message);
             });
