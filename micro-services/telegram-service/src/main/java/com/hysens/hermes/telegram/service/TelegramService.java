@@ -26,6 +26,11 @@ public class TelegramService implements MessageService {
         return true;
     }
 
+    @Override
+    public boolean loginInMessanger() {
+        return false;
+    }
+
     ///ToDo login to telegram client
     public void initAndLogin() {
         Telegram telegram = new Telegram();
