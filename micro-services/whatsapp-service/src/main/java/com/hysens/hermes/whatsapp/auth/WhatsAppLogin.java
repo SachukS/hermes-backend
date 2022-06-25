@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutionException;
 
 public class WhatsAppLogin {
     public static void login() {
-        var api = Whatsapp.newConnection();
+        var api = Whatsapp.lastConnection();
         api.registerListener(new WhatsAppListener());
 
         new MessageSender(api);
