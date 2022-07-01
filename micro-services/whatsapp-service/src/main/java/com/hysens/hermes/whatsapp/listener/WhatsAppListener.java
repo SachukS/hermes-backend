@@ -55,7 +55,7 @@ public class WhatsAppListener implements WhatsappListener {
     public void onLoggedIn() {
         if (QRCodeFrame.isEnabled())
             QRCodeFrame.dispose();
-        LOG.info("LOGINNED");
+        LOG.info("Logged in WhatsApp");
         WhatsappListener.super.onLoggedIn();
     }
 
@@ -64,12 +64,6 @@ public class WhatsAppListener implements WhatsappListener {
         LOG.warn("Whatsapp disconnected.");
         WhatsappListener.super.onDisconnected(reconnect);
     }
-
-//    @Override
-//    public void onContacts() {
-//        System.out.println("onContacts");
-//        WhatsappListener.super.onContacts();
-//    }
 
     private static BitMatrix createMatrix(String qr, int size, int margin) {
         try {
