@@ -1,6 +1,8 @@
 package com.hysens.hermes.telegram.client;
 
+import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 import com.hysens.hermes.telegram.config.CommunicateMethod;
+import com.hysens.hermes.telegram.exception.TelegramChatWithUserNotFoundException;
 import com.hysens.hermes.telegram.exception.TelegramPhoneNumberNotFoundException;
 import com.hysens.hermes.telegram.service.TelegramService;
 import it.tdlight.client.APIToken;
@@ -26,7 +28,7 @@ public class Telegram {
     private static SpringTelegramClient client;
     private static List<String> notSended;
 
-    public Telegram() {
+    public Telegram(String phoneNumber) {
         try {
             Init.start();
         } catch (CantLoadLibrary cantLoadLibrary) {
@@ -53,7 +55,7 @@ public class Telegram {
 //        client.setClientInteraction(springClientInteraction);
         // Configure the authentication info
         //ConsoleInteractiveAuthenticationData authenticationData = AuthenticationData.consoleLogin();
-        AuthenticationData authenticationData = AuthenticationData.user(Long.parseLong("380683909142"));
+        AuthenticationData authenticationData = AuthenticationData.user(Long.parseLong(phoneNumber));
 
         // Add an example update handler that prints when the bot is started
         client.addUpdateHandler(TdApi.UpdateAuthorizationState.class, Telegram::onUpdateAuthorizationState);
@@ -115,32 +117,66 @@ public class Telegram {
             }
         }
     }
-    public static void findUserAndSend(String number, String message) {
+    public static void findUser(String number){
+        MessageRecipientInfo info = new MessageRecipientInfo();
         client.send(new TdApi.SearchUserByPhoneNumber(number), result -> {
-            CommunicateMethod call = null;
+            CommunicateMethod isUserExist = null;
             try {
-                call = TelegramService.communicateMethods.take();
+                isUserExist = TelegramService.communicateMethods.take();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             if (result.isError()) {
                 if (result.getError().code==404){
-                    call.setResult(false);
+                    isUserExist.setResult(info);
                     throw new TelegramPhoneNumberNotFoundException(number);
                 }
             }
-            call.setResult(true);
-            client.send(new TdApi.CreatePrivateChat(result.get().id, false), result1 -> {
-                sendMessage(result1.get().id, message);
-            });
+            info.setUserExist(true);
+            info.setUserId(String.valueOf(result.get().id));
+            isUserExist.setResult(info);
         }, Telegram::springHandleResultHandlingException);
+    }
+
+    public static void isChatExist(String userId, String message, MessageRecipientInfo info) {
+        client.send(new TdApi.GetChat(Long.parseLong(userId)), result -> {
+            CommunicateMethod isChatExistAndSended = null;
+            try {
+                isChatExistAndSended = TelegramService.communicateMethods.take();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (result.isError()) {
+                if (result.getError().code==400){
+                    isChatExistAndSended.setResult(info);
+                    throw new TelegramChatWithUserNotFoundException(userId);
+                }
+            }
+            sendMessage(Long.parseLong(userId), message, info, isChatExistAndSended);
+            info.setChatWithUserExist(true);
+        }, Telegram::springHandleResultHandlingException);
+    }
+    public static void createChatAndSend(String userId, String message) {
+        client.send(new TdApi.CreatePrivateChat(Long.parseLong(userId), false), result1 -> {
+            sendMessage(result1.get().id, message);
+        });
     }
 
     private static void sendMessage(long id, String message) {
         TdApi.InputMessageContent content = new TdApi.InputMessageText(new TdApi.FormattedText(message, null), false, true);
         client.send(new TdApi.SendMessage(id, 0, 0, null, null, content), result -> {
             TdApi.Message chat = result.get();
-            LOG.info(chat.toString());
+            LOG.info("Message: " + message + " to " + id + " SENDED using Telegram");
+        });
+    }
+
+    private static void sendMessage(long id, String message, MessageRecipientInfo info, CommunicateMethod communicateMethod) {
+        TdApi.InputMessageContent content = new TdApi.InputMessageText(new TdApi.FormattedText(message, null), false, true);
+        client.send(new TdApi.SendMessage(id, 0, 0, null, null, content), result -> {
+            TdApi.Message chat = result.get();
+            info.setMessageSended(true);
+            communicateMethod.setResult(info);
+            LOG.info("Message: " + message + " to " + id + " SENDED using Telegram");
         });
     }
 
@@ -152,7 +188,7 @@ public class Telegram {
     private static void onUpdateAuthorizationState(TdApi.UpdateAuthorizationState update) {
         TdApi.AuthorizationState authorizationState = update.authorizationState;
         if (authorizationState instanceof TdApi.AuthorizationStateReady) {
-            LOG.info("Logged in");
+            LOG.info("Logged in Telegram");
         } else if (authorizationState instanceof TdApi.AuthorizationStateClosing) {
             LOG.info("Closing...");
         } else if (authorizationState instanceof TdApi.AuthorizationStateClosed) {
