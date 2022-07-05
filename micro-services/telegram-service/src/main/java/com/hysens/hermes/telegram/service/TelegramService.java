@@ -20,8 +20,8 @@ public class TelegramService implements MessageService {
     }
 
     @Override
-    public boolean loginInMessenger(String phoneNumber) {
-        new Telegram(phoneNumber);
+    public boolean loginInMessenger() {
+        new Telegram();
         return true;
     }
 

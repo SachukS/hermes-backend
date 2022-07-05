@@ -5,16 +5,14 @@ import com.hysens.hermes.telegram.config.CommunicateMethod;
 import com.hysens.hermes.telegram.exception.TelegramChatWithUserNotFoundException;
 import com.hysens.hermes.telegram.exception.TelegramPhoneNumberNotFoundException;
 import com.hysens.hermes.telegram.service.TelegramService;
-import it.tdlight.client.APIToken;
-import it.tdlight.client.AuthenticationData;
-import it.tdlight.client.CommandHandler;
-import it.tdlight.client.TDLibSettings;
+import it.tdlight.client.*;
 import it.tdlight.common.Init;
 import it.tdlight.common.utils.CantLoadLibrary;
 import it.tdlight.jni.TdApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -25,10 +23,12 @@ public class Telegram {
     private static final TdApi.MessageSender ADMIN_ID = new TdApi.MessageSenderUser(489214541);
     public static final Logger LOG = LoggerFactory.getLogger(Telegram.class);
 
+    public static final JFrame QRCodeFrame = new JFrame();
+
     private static SpringTelegramClient client;
     private static List<String> notSended;
 
-    public Telegram(String phoneNumber) {
+    public Telegram() {
         try {
             Init.start();
         } catch (CantLoadLibrary cantLoadLibrary) {
@@ -55,7 +55,8 @@ public class Telegram {
 //        client.setClientInteraction(springClientInteraction);
         // Configure the authentication info
         //ConsoleInteractiveAuthenticationData authenticationData = AuthenticationData.consoleLogin();
-        AuthenticationData authenticationData = AuthenticationData.user(Long.parseLong(phoneNumber));
+//        AuthenticationData authenticationData = AuthenticationData.user(Long.parseLong(phoneNumber));
+        AuthenticationData authenticationData = AuthenticationData.qrCode();
 
         // Add an example update handler that prints when the bot is started
         client.addUpdateHandler(TdApi.UpdateAuthorizationState.class, Telegram::onUpdateAuthorizationState);
@@ -188,6 +189,8 @@ public class Telegram {
     private static void onUpdateAuthorizationState(TdApi.UpdateAuthorizationState update) {
         TdApi.AuthorizationState authorizationState = update.authorizationState;
         if (authorizationState instanceof TdApi.AuthorizationStateReady) {
+            if (QRCodeFrame.isEnabled())
+                QRCodeFrame.dispose();
             LOG.info("Logged in Telegram");
         } else if (authorizationState instanceof TdApi.AuthorizationStateClosing) {
             LOG.info("Closing...");
