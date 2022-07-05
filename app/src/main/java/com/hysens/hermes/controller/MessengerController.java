@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class MessengerController {
 
     @PostMapping("/whatsapp/login")
-    public void loginWhatsapp(@RequestBody String phoneNumber) {
-        new MessageServiceFactory().from(Messenger.WHATSAPP).loginInMessenger(phoneNumber);
+    public void loginWhatsapp() {
+        new MessageServiceFactory().from(Messenger.WHATSAPP).loginInMessenger();
     }
 
     @PostMapping("/telegram/login")
-    public void loginTelegram(@RequestBody String phoneNumber) {
-        new MessageServiceFactory().from(Messenger.TELEGRAM).loginInMessenger(phoneNumber);
+    public void loginTelegram() {
+        new MessageServiceFactory().from(Messenger.TELEGRAM).loginInMessenger();
     }
 }

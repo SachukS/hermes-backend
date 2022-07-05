@@ -16,7 +16,7 @@ public class WhatsAppService implements MessageService {
     }
 
     @Override
-    public boolean loginInMessenger(String phoneNumber) {
+    public boolean loginInMessenger() {
         WhatsAppLogin.login();
         return true;
     }

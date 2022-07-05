@@ -25,13 +25,11 @@ Before running please add this **VM option** in Run/Depug Configurations tab:
 
 
 ## Usage/Testing
-For testing you can use Postman. First of all you need to login in yours WhatsApp and Telegram accounts. Next requests you need to send with Text body containing your phone number:
+For testing you can use Postman. First of all you need to login in yours WhatsApp and Telegram accounts. Send next requests:
 
-```text
-380111111111
-```
 
-#### To login in Telegram send this POST request with body mentioned above:
+
+#### To login in Telegram send this POST request:
 ```bash
 http://localhost:8080/api/v1/messenger/telegram/login
 ```
@@ -39,7 +37,7 @@ In your console will be request for submit code sended to you. All subsequent st
 
 
 
-#### To login in WhatsApp send this POST request with body mentioned above:
+#### To login in WhatsApp send this POST request:
 
 
 ```bash
