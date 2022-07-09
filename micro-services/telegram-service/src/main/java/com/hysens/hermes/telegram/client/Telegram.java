@@ -5,7 +5,10 @@ import com.hysens.hermes.telegram.config.CommunicateMethod;
 import com.hysens.hermes.telegram.exception.TelegramChatWithUserNotFoundException;
 import com.hysens.hermes.telegram.exception.TelegramPhoneNumberNotFoundException;
 import com.hysens.hermes.telegram.service.TelegramService;
-import it.tdlight.client.*;
+import it.tdlight.client.APIToken;
+import it.tdlight.client.AuthenticationData;
+import it.tdlight.client.CommandHandler;
+import it.tdlight.client.TDLibSettings;
 import it.tdlight.common.Init;
 import it.tdlight.common.utils.CantLoadLibrary;
 import it.tdlight.jni.TdApi;
@@ -15,18 +18,15 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Telegram {
-
     private static final TdApi.MessageSender ADMIN_ID = new TdApi.MessageSenderUser(489214541);
+
     public static final Logger LOG = LoggerFactory.getLogger(Telegram.class);
 
     public static final JFrame QRCodeFrame = new JFrame();
 
     private static SpringTelegramClient client;
-    private static List<String> notSended;
 
     public Telegram() {
         try {
@@ -35,39 +35,25 @@ public class Telegram {
             cantLoadLibrary.printStackTrace();
         }
 
-        // Obtain the API token
         APIToken apiToken = new APIToken(9234724, "990cded7571d97f83502e39b1793b63b");
 
-        // Configure the com.hysens.hermes.telegram.client
         TDLibSettings settings = TDLibSettings.create(apiToken);
 
-        // Configure the session directory
         Path sessionPath = Paths.get("hermes-tdlight-session");
         settings.setDatabaseDirectoryPath(sessionPath.resolve("data"));
         settings.setDownloadedFilesDirectoryPath(sessionPath.resolve("downloads"));
 
-        // Create a com.hysens.hermes.telegram.client
         client = new SpringTelegramClient(settings);
-        notSended = new ArrayList<>();
-//        SpringClientInteraction springClientInteraction =
-//                new SpringClientInteraction(SpringTelegramClient.blockingExecutor, client);
-//
-//        client.setClientInteraction(springClientInteraction);
-        // Configure the authentication info
-        //ConsoleInteractiveAuthenticationData authenticationData = AuthenticationData.consoleLogin();
-//        AuthenticationData authenticationData = AuthenticationData.user(Long.parseLong(phoneNumber));
+
         AuthenticationData authenticationData = AuthenticationData.qrCode();
 
         // Add an example update handler that prints when the bot is started
         client.addUpdateHandler(TdApi.UpdateAuthorizationState.class, Telegram::onUpdateAuthorizationState);
 
         // Add an example update handler that prints every received message
-        //client.addUpdateHandler(TdApi.UpdateNewMessage.class, Telegram::onUpdateNewMessage);
+        client.addUpdateHandler(TdApi.UpdateChatReadOutbox.class, Telegram::onUpdateChatReadOutbox);
 
-        // Add an example command handler that stops the bot
-        client.addCommandHandler("stop", new StopCommandHandler());
 
-        // Start the com.hysens.hermes.telegram.client
         client.start(authenticationData);
 
         try {
@@ -77,34 +63,28 @@ public class Telegram {
         }
     }
 
-    private static void onUpdateNewMessage(TdApi.UpdateNewMessage update) {
-        // Get the message content
-//        TdApi.MessageContent messageContent = update.message.content;
-//
-//        // Get the message text
-//        String text;
-//        if (messageContent instanceof TdApi.MessageText) {
-//            // Get the text of the text message
-//            text = ((TdApi.MessageText) messageContent).text.text;
-//        } else {
-//            // We handle only text messages, the other messages will be printed as their type
-//            text = String.format("(%s)", messageContent.getClass().getSimpleName());
-//        }
-//
-//        // Get the chat title
-//        com.hysens.hermes.telegram.client.send(new TdApi.GetChat(update.message.chatId), chatIdResult -> {
-//            // Get the chat response
-//            TdApi.Chat chat = chatIdResult.get();
-//            // Get the chat name
-//            String chatName = chat.title;
-//
-//            // Print the message
-//            System.out.printf("Received new message from chat %s: %s%n", chatName, text);
-//        });
+    private static void onUpdateChatReadOutbox(TdApi.UpdateChatReadOutbox update) {
+        long chatId = update.chatId;
+        long messageId = update.lastReadOutboxMessageId;
 
+        client.send(new TdApi.GetMessage(chatId, messageId), messageResult -> {
+            TdApi.Message message = messageResult.get();
+            TdApi.MessageContent messageContent = message.content;
+            String text;
+            if (messageContent instanceof TdApi.MessageText) {
+                text = ((TdApi.MessageText) messageContent).text.text;
+            } else {
+                text = String.format("(%s)", messageContent.getClass().getSimpleName());
+            }
+            client.send(new TdApi.GetChat(chatId), chatIdResult -> {
+                TdApi.Chat chat = chatIdResult.get();
+                String chatName = chat.title;
+                LOG.info("Message: " + text + " to " + chatName + " - READ");
+            });
+
+        });
 
     }
-
 
     private static class StopCommandHandler implements CommandHandler {
 
@@ -153,36 +133,36 @@ public class Telegram {
                     throw new TelegramChatWithUserNotFoundException(userId);
                 }
             }
-            sendMessage(Long.parseLong(userId), message, info, isChatExistAndSended);
+            sendMessage(Long.parseLong(userId), result.get().title, message, info, isChatExistAndSended);
             info.setChatWithUserExist(true);
         }, Telegram::springHandleResultHandlingException);
     }
     public static void createChatAndSend(String userId, String message) {
-        client.send(new TdApi.CreatePrivateChat(Long.parseLong(userId), false), result1 -> {
-            sendMessage(result1.get().id, message);
+        client.send(new TdApi.CreatePrivateChat(Long.parseLong(userId), false), result -> {
+            TdApi.Chat chat = result.get();
+            sendMessage(chat.id, chat.title, message);
         });
     }
 
-    private static void sendMessage(long id, String message) {
+    private static void sendMessage(long id, String title, String message) {
         TdApi.InputMessageContent content = new TdApi.InputMessageText(new TdApi.FormattedText(message, null), false, true);
         client.send(new TdApi.SendMessage(id, 0, 0, null, null, content), result -> {
-            TdApi.Message chat = result.get();
-            LOG.info("Message: " + message + " to " + id + " SENDED using Telegram");
+            TdApi.Message sendedMessage = result.get();
+            LOG.info("Message: " + message + " to " + title + " SENDED using Telegram");
         });
     }
 
-    private static void sendMessage(long id, String message, MessageRecipientInfo info, CommunicateMethod communicateMethod) {
+    private static void sendMessage(long id, String title, String message, MessageRecipientInfo info, CommunicateMethod communicateMethod) {
         TdApi.InputMessageContent content = new TdApi.InputMessageText(new TdApi.FormattedText(message, null), false, true);
         client.send(new TdApi.SendMessage(id, 0, 0, null, null, content), result -> {
-            TdApi.Message chat = result.get();
+            TdApi.Message sendedMessage = result.get();
             info.setMessageSended(true);
             communicateMethod.setResult(info);
-            LOG.info("Message: " + message + " to " + id + " SENDED using Telegram");
+            LOG.info("Message: " + message + " to " + title + " SENDED using Telegram");
         });
     }
 
     private static void springHandleResultHandlingException(Throwable ex) {
-        notSended.add(ex.getMessage());
         LOG.error(ex.getMessage());
     }
 

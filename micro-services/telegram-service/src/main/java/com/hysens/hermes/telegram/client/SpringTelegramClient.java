@@ -83,7 +83,6 @@ public class SpringTelegramClient implements Authenticable {
         this.addUpdateHandler(TdApi.UpdateAuthorizationState.class, new SpringAuthorizationStateWaitForExit(this.closed));
         AtomicReference<TdApi.User> me = new AtomicReference<>();
         this.addUpdateHandler(TdApi.UpdateAuthorizationState.class, new SpringAuthorizationStateReadyGetMe(client, me));
-        this.addUpdateHandler(TdApi.UpdateNewMessage.class, new SpringCommandsHandler(client, this.commandHandlers, me));
     }
 
     private void handleUpdate(TdApi.Object update) {
@@ -187,9 +186,6 @@ public class SpringTelegramClient implements Authenticable {
         this.defaultExceptionHandlers.add(defaultExceptionHandlers);
     }
 
-    /**
-     * Start the com.hysens.hermes.telegram.client
-     */
     public void start(AuthenticationData authenticationData) {
         this.authenticationData = authenticationData;
         createDirectories();
