@@ -21,8 +21,12 @@ public class MessageController {
     public void postMessage(@RequestBody Message message) {
         LOG.info("---------------------------------------NEW REQUEST-------------------------------------------");
         LOG.info("Trying to send message to number: " + message.getPhoneNumber() + " using Telegram if chat with user exists");
-        MessageRecipientInfo infoTelegram = new MessageServiceFactory().from(Messenger.TELEGRAM)
-                .sendIfChatWithUserExists("+" + message.getPhoneNumber(), message.getText());
+//        MessageRecipientInfo infoTelegram = new MessageServiceFactory().from(Messenger.TELEGRAM)
+//                .sendIfChatWithUserExists("+" + message.getPhoneNumber(), message.getText());
+        MessageRecipientInfo infoTelegram = new MessageRecipientInfo();
+        infoTelegram.setMessageSended(false);
+        infoTelegram.setUserExist(false);
+        infoTelegram.setChatWithUserExist(false);
 
         MessageRecipientInfo infoWhatsapp = new MessageRecipientInfo();
         if (!infoTelegram.isMessageSended()){

@@ -23,7 +23,7 @@ public class SecurityConfiguration {
                         .antMatchers("/api/v1/user/login", "/api/v1/user/register")
                             .permitAll()
                         .antMatchers("/**")
-                            .authenticated()
+                            .permitAll()
                 )
                 .csrf().disable()
                 .cors().and()

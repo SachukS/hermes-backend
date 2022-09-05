@@ -6,14 +6,10 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import com.hysens.hermes.whatsapp.services.MessageSender;
 import com.hysens.hermes.whatsapp.utils.QRAuthorize;
 import it.auties.whatsapp.api.QrHandler;
 import it.auties.whatsapp.api.WhatsappListener;
-import it.auties.whatsapp.model.chat.Chat;
-import it.auties.whatsapp.model.contact.Contact;
-import it.auties.whatsapp.model.info.MessageInfo;
-import it.auties.whatsapp.model.message.model.MessageStatus;
+import it.auties.whatsapp.model.action.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +59,12 @@ public class WhatsAppListener implements WhatsappListener {
     public void onDisconnected(boolean reconnect) {
         LOG.warn("Whatsapp disconnected.");
         WhatsappListener.super.onDisconnected(reconnect);
+    }
+
+    @Override
+    public void onAction(Action action) {
+        LOG.error(action.value().toString());
+        WhatsappListener.super.onAction(action);
     }
 
     private static BitMatrix createMatrix(String qr, int size, int margin) {
