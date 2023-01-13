@@ -3,6 +3,9 @@ package com.hysens.hermes.common.model;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Entity
@@ -20,7 +23,7 @@ public class Message {
     private String message;
     private String mediaFile;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createdDate;
+    private Date createdDate = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date modifyDate;
 
