@@ -2,6 +2,7 @@ package com.hysens.hermes.whatsapp;
 
 import com.hysens.hermes.common.service.MessageService;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
+import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.whatsapp.auth.WhatsAppLogin;
 import com.hysens.hermes.whatsapp.services.MessageSender;
 import org.springframework.stereotype.Service;
@@ -16,8 +17,8 @@ public class WhatsAppService implements MessageService {
     }
 
     @Override
-    public boolean loginInMessenger() {
-        WhatsAppLogin.login();
+    public boolean loginInMessenger(SimpleMessageService simpleMessageService) {
+        WhatsAppLogin.login(simpleMessageService);
         return true;
     }
 
