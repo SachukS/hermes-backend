@@ -1,6 +1,9 @@
 package com.hysens.hermes.telegram.client;
 
+import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
+import com.hysens.hermes.common.repository.SimpleMessageRepository;
+import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.telegram.config.CommunicateMethod;
 import com.hysens.hermes.telegram.exception.TelegramChatWithUserNotFoundException;
 import com.hysens.hermes.telegram.exception.TelegramPhoneNumberNotFoundException;
@@ -16,10 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 
 public class Telegram {
+    private static SimpleMessageService simpleMessageService;
     private static final TdApi.MessageSender ADMIN_ID = new TdApi.MessageSenderUser(489214541);
 
     public static final Logger LOG = LoggerFactory.getLogger(Telegram.class);
@@ -28,12 +34,14 @@ public class Telegram {
 
     private static SpringTelegramClient client;
 
-    public Telegram() {
+    public Telegram(SimpleMessageService messageService) {
         try {
             Init.start();
         } catch (CantLoadLibrary cantLoadLibrary) {
             cantLoadLibrary.printStackTrace();
         }
+
+        simpleMessageService = messageService;
 
         APIToken apiToken = new APIToken(9234724, "990cded7571d97f83502e39b1793b63b");
 
@@ -53,13 +61,45 @@ public class Telegram {
         // Add an example update handler that prints every received message
         client.addUpdateHandler(TdApi.UpdateChatReadOutbox.class, Telegram::onUpdateChatReadOutbox);
 
+        client.addUpdateHandler(TdApi.UpdateNewMessage.class, Telegram::onUpdateNewMessage);
 
         client.start(authenticationData);
 
-        try {
-            client.waitForExit();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+
+            try {
+                client.waitForExit();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+    }
+
+    private static void onUpdateNewMessage(TdApi.UpdateNewMessage update) {
+        // Get the message content
+        var messageContent = update.message.content;
+        if (!update.message.isOutgoing)
+        {
+            // Get the message text
+            String text;
+            if (messageContent instanceof TdApi.MessageText) {
+                // Get the text of the text message
+                text = ((TdApi.MessageText) messageContent).text.text;
+            } else {
+                // We handle only text messages, the other messages will be printed as their type
+                text = String.format("(%s)", messageContent.getClass().getSimpleName());
+            }
+            client.send(new TdApi.GetUser(update.message.chatId), result -> {
+                TdApi.User user = result.get();
+                LOG.warn("Received new message from " + user.id + ": " + text);
+
+                SimpleMessage simpleMessage = new SimpleMessage();
+                simpleMessage.setMessage(text);
+                simpleMessage.setSenderPhone(user.phoneNumber);
+                simpleMessage.setFromMe(false);
+                simpleMessage.setMessenger("Telegram");
+                simpleMessage.setMessageStatus("Received");
+                simpleMessageService.saveWithoutClientId(simpleMessage, user.id);
+            });
         }
     }
 
@@ -113,6 +153,7 @@ public class Telegram {
                     throw new TelegramPhoneNumberNotFoundException(number);
                 }
             }
+//            simpleMessageService.setTelegramIdByPhone(result.get().id, number);
             info.setUserExist(true);
             info.setUserId(String.valueOf(result.get().id));
             isUserExist.setResult(info);

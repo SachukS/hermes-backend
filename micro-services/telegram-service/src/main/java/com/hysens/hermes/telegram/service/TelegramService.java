@@ -2,15 +2,16 @@ package com.hysens.hermes.telegram.service;
 
 import com.hysens.hermes.common.service.MessageService;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
+import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.telegram.client.Telegram;
 import com.hysens.hermes.telegram.config.CommunicateMethod;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.SynchronousQueue;
 
 @Service
 public class TelegramService implements MessageService {
-
     public static SynchronousQueue<CommunicateMethod> communicateMethods;
 
     @Override
@@ -20,8 +21,8 @@ public class TelegramService implements MessageService {
     }
 
     @Override
-    public boolean loginInMessenger() {
-        new Telegram();
+    public boolean loginInMessenger(SimpleMessageService simpleMessageService) {
+        new Telegram(simpleMessageService);
         return true;
     }
 
