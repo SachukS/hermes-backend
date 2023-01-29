@@ -1,6 +1,7 @@
 package com.hysens.hermes.controller;
 
 import com.hysens.hermes.common.model.Client;
+import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.repository.ClientRepository;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.service.message.MessageServiceFactory;
@@ -33,8 +34,10 @@ public class MessengerController {
         clientRepository.saveAll(clients);
     }
 
-    @GetMapping("/contacts/load")
-    public List<Client> getContacts() {
+    @GetMapping("/contacts/load/{status}")
+    public List<Client> getContacts(@PathVariable String status) {
+        if (status.equals("unread"))
+            return clientRepository.findAllByMessageStatus(MessageStatusEnum.UNREAD);
         return clientRepository.findAll();
     }
 }

@@ -2,6 +2,7 @@ package com.hysens.hermes.common.service;
 
 import com.hysens.hermes.common.model.Client;
 import com.hysens.hermes.common.model.SimpleMessage;
+import com.hysens.hermes.common.model.enums.ChatStatusEnum;
 import com.hysens.hermes.common.repository.ClientRepository;
 import com.hysens.hermes.common.repository.SimpleMessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +22,7 @@ public class SimpleMessageService {
         else
             client = clientRepository.findByTelegramId(telegramId);
         simpleMessage.setClientId(client.getId());
-        client.setLastMessage(simpleMessage.getMessage());
-        client.setLastMessageDate(simpleMessage.getCreatedDate());
-        simpleMessageRepository.save(simpleMessage);
+        client.setLastMessage(simpleMessage);
         clientRepository.save(client);
     }
 

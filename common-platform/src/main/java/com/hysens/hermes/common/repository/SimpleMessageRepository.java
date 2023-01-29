@@ -12,4 +12,6 @@ public interface SimpleMessageRepository extends JpaRepository<SimpleMessage, Lo
 
     SimpleMessage findFirstBySenderPhone(String phone);
 
+    SimpleMessage findById(long id);
+
 }

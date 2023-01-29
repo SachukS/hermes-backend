@@ -2,6 +2,7 @@ package com.hysens.hermes.controller;
 
 import com.hysens.hermes.common.model.Client;
 import com.hysens.hermes.common.model.SimpleMessage;
+import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.pojo.Message;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 import com.hysens.hermes.common.repository.ClientRepository;
@@ -67,16 +68,20 @@ public class MessageController {
         }
         else {
             message.setFromMe(true);
-            message.setMessageStatus("SENT");
-            client.setLastMessageDate(message.getCreatedDate());
-            client.setLastMessage(message.getMessage());
+            message.setMessageStatus(MessageStatusEnum.SENT);
+            client.setLastMessage(message);
             clientRepository.save(client);
-            simpleMessageRepository.save(message);
         }
 
     }
     @GetMapping("/load/{id}")
     public List<SimpleMessage> getMessages(@PathVariable("id") long id) {
         return simpleMessageRepository.findAllByClientId(id);
+    }
+
+    @PostMapping("/read")
+    public void setMessageStatusRead(@RequestBody List<SimpleMessage> messages) {
+        messages.forEach(message -> message.setMessageStatus(MessageStatusEnum.READ));
+        simpleMessageRepository.saveAll(messages);
     }
 }

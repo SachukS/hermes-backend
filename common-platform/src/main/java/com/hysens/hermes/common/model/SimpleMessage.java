@@ -1,16 +1,16 @@
 package com.hysens.hermes.common.model;
 
+import com.hysens.hermes.common.model.enums.MessageStatusEnum;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Objects;
 
 @Entity
 public class SimpleMessage {
@@ -23,11 +23,17 @@ public class SimpleMessage {
     private long clientId;
     private String messenger;
     private String message;
-    private String messageStatus;
+    @Enumerated(EnumType.STRING)
+    private MessageStatusEnum messageStatus;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createdDate = LocalDateTime.now();
+    @CreationTimestamp
+    private LocalDateTime createdDate;
 
     public SimpleMessage() {
+    }
+
+    public SimpleMessage(long id) {
+        this.id = id;
     }
 
     public SimpleMessage(String messenger, String message) {
@@ -51,7 +57,7 @@ public class SimpleMessage {
         this.receiverPhone = receiverPhone;
     }
 
-    public String getMessageStatus() {
+    public MessageStatusEnum getMessageStatus() {
         return messageStatus;
     }
 
@@ -63,7 +69,7 @@ public class SimpleMessage {
         this.clientId = clientId;
     }
 
-    public void setMessageStatus(String messageStatus) {
+    public void setMessageStatus(MessageStatusEnum messageStatus) {
         this.messageStatus = messageStatus;
     }
 
@@ -105,5 +111,18 @@ public class SimpleMessage {
 
     public void setCreatedDate(LocalDateTime createdDate) {
         this.createdDate = createdDate;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SimpleMessage that = (SimpleMessage) o;
+        return id == that.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
