@@ -1,6 +1,7 @@
 package com.hysens.hermes.telegram.client;
 
 import com.hysens.hermes.common.model.SimpleMessage;
+import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 import com.hysens.hermes.common.repository.SimpleMessageRepository;
 import com.hysens.hermes.common.service.SimpleMessageService;
@@ -8,10 +9,7 @@ import com.hysens.hermes.telegram.config.CommunicateMethod;
 import com.hysens.hermes.telegram.exception.TelegramChatWithUserNotFoundException;
 import com.hysens.hermes.telegram.exception.TelegramPhoneNumberNotFoundException;
 import com.hysens.hermes.telegram.service.TelegramService;
-import it.tdlight.client.APIToken;
-import it.tdlight.client.AuthenticationData;
-import it.tdlight.client.CommandHandler;
-import it.tdlight.client.TDLibSettings;
+import it.tdlight.client.*;
 import it.tdlight.common.Init;
 import it.tdlight.common.utils.CantLoadLibrary;
 import it.tdlight.jni.TdApi;
@@ -89,16 +87,21 @@ public class Telegram {
                 text = String.format("(%s)", messageContent.getClass().getSimpleName());
             }
             client.send(new TdApi.GetUser(update.message.chatId), result -> {
-                TdApi.User user = result.get();
-                LOG.warn("Received new message from " + user.id + ": " + text);
+                try {
+                    TdApi.User user = result.get();
+                    LOG.warn("Received new message from " + user.id + ": " + text);
 
-                SimpleMessage simpleMessage = new SimpleMessage();
-                simpleMessage.setMessage(text);
-                simpleMessage.setSenderPhone(user.phoneNumber);
-                simpleMessage.setFromMe(false);
-                simpleMessage.setMessenger("Telegram");
-                simpleMessage.setMessageStatus("Received");
-                simpleMessageService.saveWithoutClientId(simpleMessage, user.id);
+                    SimpleMessage simpleMessage = new SimpleMessage();
+                    simpleMessage.setMessage(text);
+                    simpleMessage.setSenderPhone(user.phoneNumber);
+                    simpleMessage.setFromMe(false);
+                    simpleMessage.setMessenger("Telegram");
+                    simpleMessage.setMessageStatus(MessageStatusEnum.UNREAD);
+                    simpleMessageService.saveWithoutClientId(simpleMessage, user.id);
+                }
+                catch (TelegramError e) {
+                    LOG.error("Received message from group chat");
+                }
             });
         }
     }

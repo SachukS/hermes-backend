@@ -7,6 +7,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.hysens.hermes.common.model.SimpleMessage;
+import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.whatsapp.utils.QRAuthorize;
 import it.auties.whatsapp.api.DisconnectReason;
@@ -76,7 +77,7 @@ public class WhatsAppListener implements Listener {
             simpleMessage.setSenderPhone(info.senderJid().toPhoneNumber().substring(1));
             simpleMessage.setFromMe(false);
             simpleMessage.setMessenger("Whatsapp");
-            simpleMessage.setMessageStatus("Received");
+            simpleMessage.setMessageStatus(MessageStatusEnum.UNREAD);
             simpleMessageService.saveWithoutClientId(simpleMessage, 0L);
         }
         Listener.super.onNewMessage(info);
