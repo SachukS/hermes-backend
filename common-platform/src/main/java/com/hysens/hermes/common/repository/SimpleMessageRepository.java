@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface SimpleMessageRepository extends JpaRepository<SimpleMessage, Long> {
-    List<SimpleMessage> findAllByClientId(long clientId);
+    List<SimpleMessage> findAllByClientIdOrderByCreatedDate(long clientId);
 
     SimpleMessage findFirstBySenderPhone(String phone);
 

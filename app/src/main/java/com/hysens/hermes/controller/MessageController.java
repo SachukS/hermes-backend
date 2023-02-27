@@ -76,7 +76,7 @@ public class MessageController {
     }
     @GetMapping("/load/{id}")
     public List<SimpleMessage> getMessages(@PathVariable("id") long id) {
-        return simpleMessageRepository.findAllByClientId(id);
+        return simpleMessageRepository.findAllByClientIdOrderByCreatedDate(id);
     }
 
     @PostMapping("/read")
