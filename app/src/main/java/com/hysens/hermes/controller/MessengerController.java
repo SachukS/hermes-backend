@@ -7,7 +7,16 @@ import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.service.message.MessageServiceFactory;
 import com.hysens.hermes.service.message.Messenger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -34,10 +43,18 @@ public class MessengerController {
         clientRepository.saveAll(clients);
     }
 
-    @GetMapping("/contacts/load/{status}")
-    public List<Client> getContacts(@PathVariable String status) {
-        if (status.equals("unread"))
-            return clientRepository.findAllByMessageStatus(MessageStatusEnum.UNREAD);
-        return clientRepository.findAll();
+    @GetMapping("/contacts/load")
+    public Page<Client> getContacts(
+            @RequestParam(required = false) String chatStatus,
+            @PageableDefault Pageable pageable,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String lastMessage,
+            @RequestParam(required = false) String clientName
+    ) {
+        MessageStatusEnum messageStatusEnum = null;
+        if (chatStatus != null && !chatStatus.equals("all")) {
+            messageStatusEnum = MessageStatusEnum.valueOf(chatStatus.toUpperCase());
+        }
+        return clientRepository.findAllByCriteria(messageStatusEnum, phone, lastMessage, clientName, pageable);
     }
 }
