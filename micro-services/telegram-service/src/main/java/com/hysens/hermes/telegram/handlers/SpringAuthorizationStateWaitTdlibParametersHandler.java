@@ -23,28 +23,29 @@ public final class SpringAuthorizationStateWaitTdlibParametersHandler implements
 
     @Override
     public void onUpdate(TdApi.UpdateAuthorizationState update) {
-        if (update.authorizationState.getConstructor() == TdApi.AuthorizationStateWaitTdlibParameters.CONSTRUCTOR) {
-            TdApi.TdlibParameters params = new TdApi.TdlibParameters();
-            params.useTestDc = settings.isUsingTestDatacenter();
-            params.databaseDirectory = settings.getDatabaseDirectoryPath().toString();
-            params.filesDirectory = settings.getDownloadedFilesDirectoryPath().toString();
-            params.useFileDatabase = settings.isFileDatabaseEnabled();
-            params.useChatInfoDatabase = settings.isChatInfoDatabaseEnabled();
-            params.useMessageDatabase = settings.isMessageDatabaseEnabled();
+        if (update.authorizationState.getConstructor() == 904720988) {
+            TdApi.SetTdlibParameters params = new TdApi.SetTdlibParameters();
+            params.useTestDc = this.settings.isUsingTestDatacenter();
+            params.databaseDirectory = this.settings.getDatabaseDirectoryPath().toString();
+            params.filesDirectory = this.settings.getDownloadedFilesDirectoryPath().toString();
+            params.useFileDatabase = this.settings.isFileDatabaseEnabled();
+            params.useChatInfoDatabase = this.settings.isChatInfoDatabaseEnabled();
+            params.useMessageDatabase = this.settings.isMessageDatabaseEnabled();
             params.useSecretChats = false;
-            params.apiId = settings.getApiToken().getApiID();
-            params.apiHash = settings.getApiToken().getApiHash();
-            params.systemLanguageCode = settings.getSystemLanguageCode();
-            params.deviceModel = settings.getDeviceModel();
-            params.systemVersion = settings.getSystemVersion();
-            params.applicationVersion = settings.getApplicationVersion();
-            params.enableStorageOptimizer = settings.isStorageOptimizerEnabled();
-            params.ignoreFileNames = settings.isIgnoreFileNames();
-            client.send(new TdApi.SetTdlibParameters(params), ok -> {
-                if (ok.getConstructor() == TdApi.Error.CONSTRUCTOR) {
-                    throw new TelegramError((TdApi.Error) ok);
+            params.apiId = this.settings.getApiToken().getApiID();
+            params.apiHash = this.settings.getApiToken().getApiHash();
+            params.systemLanguageCode = this.settings.getSystemLanguageCode();
+            params.deviceModel = this.settings.getDeviceModel();
+            params.systemVersion = this.settings.getSystemVersion();
+            params.applicationVersion = this.settings.getApplicationVersion();
+            params.enableStorageOptimizer = this.settings.isStorageOptimizerEnabled();
+            params.ignoreFileNames = this.settings.isIgnoreFileNames();
+            params.databaseEncryptionKey = null;
+            this.client.send(params, (ok) -> {
+                if (ok.getConstructor() == -1679978726) {
+                    throw new TelegramError((TdApi.Error)ok);
                 }
-            }, exceptionHandler);
+            }, this.exceptionHandler);
         }
     }
 }

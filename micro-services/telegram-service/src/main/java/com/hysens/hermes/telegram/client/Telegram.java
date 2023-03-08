@@ -63,12 +63,16 @@ public class Telegram {
 
         client.start(authenticationData);
 
+        TdApi.SetLogVerbosityLevel level = new TdApi.SetLogVerbosityLevel(1);
+        client.send(level, (ok) -> {
+            LOG.info("Verbosity level setted to 1");
+        }, throwable -> {});
 
-            try {
-                client.waitForExit();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        try {
+            client.waitForExit();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
