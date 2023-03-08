@@ -54,9 +54,6 @@ public class SpringTelegramClient implements Authenticable {
                 new SpringAuthorizationStateWaitTdlibParametersHandler(client, settings, this::handleDefaultException)
         );
         this.addUpdateHandler(TdApi.UpdateAuthorizationState.class,
-                new SpringAuthorizationStateWaitEncryptionKeyHandler(client, this::handleDefaultException)
-        );
-        this.addUpdateHandler(TdApi.UpdateAuthorizationState.class,
                 new SpringAuthorizationStateWaitAuthenticationDataHandler(client, this, this::handleDefaultException)
         );
         this.addUpdateHandler(TdApi.UpdateAuthorizationState.class,
