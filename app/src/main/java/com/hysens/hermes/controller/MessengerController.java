@@ -1,5 +1,11 @@
 package com.hysens.hermes.controller;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.hysens.hermes.common.model.Client;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.repository.ClientRepository;
@@ -10,6 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,8 +27,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/messenger")
@@ -28,14 +44,21 @@ public class MessengerController {
     @Autowired
     public SimpleMessageService simpleMessageService;
 
-    @PostMapping("/whatsapp/login")
-    public void loginWhatsapp() {
-        new MessageServiceFactory().from(Messenger.WHATSAPP).loginInMessenger(simpleMessageService);
+    @GetMapping("/whatsapp/login")
+    public ResponseEntity<String> loginWhatsapp() {
+        String response = new MessageServiceFactory().from(Messenger.WHATSAPP).loginInMessenger(simpleMessageService);
+        if (response.equals("Logged in WhatsApp"))
+            return ResponseEntity.ok(response);
+        return getQrResponse(response);
     }
 
-    @PostMapping("/telegram/login")
-    public void loginTelegram() {
-        new MessageServiceFactory().from(Messenger.TELEGRAM).loginInMessenger(simpleMessageService);
+    @GetMapping("/telegram/login")
+    public ResponseEntity<String> loginTelegram() {
+        String response = new MessageServiceFactory().from(Messenger.TELEGRAM).loginInMessenger(simpleMessageService);
+        if (response.contains("tg")) {
+            return getQrResponse(response);
+        }
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/contacts")
@@ -56,5 +79,37 @@ public class MessengerController {
             messageStatusEnum = MessageStatusEnum.valueOf(chatStatus.toUpperCase());
         }
         return clientRepository.findAllByCriteria(messageStatusEnum, phone, lastMessage, clientName, pageable);
+    }
+
+    private ResponseEntity<String> getQrResponse(String response) {
+        byte[] imageData = generateQrCodeImageData(response);
+        String base64ImageData = "data:image/png;base64," + Base64.getEncoder().encodeToString(imageData);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_EVENT_STREAM);
+        return new ResponseEntity<>(base64ImageData, headers, HttpStatus.OK);
+    }
+
+    private byte[] generateQrCodeImageData(String url) {
+        Map<EncodeHintType, Object> hints = new HashMap<>();
+        hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+        hints.put(EncodeHintType.MARGIN, 1);
+
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = null;
+        try {
+            bitMatrix = qrCodeWriter.encode(url, BarcodeFormat.QR_CODE, 200, 200, hints);
+        } catch (WriterException e) {
+            e.printStackTrace();
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try {
+            MatrixToImageWriter.writeToStream(bitMatrix, "png", outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outputStream.toByteArray();
     }
 }

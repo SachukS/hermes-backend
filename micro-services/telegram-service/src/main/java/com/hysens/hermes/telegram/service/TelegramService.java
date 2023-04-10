@@ -5,6 +5,7 @@ import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.telegram.client.Telegram;
 import com.hysens.hermes.telegram.config.CommunicateMethod;
+import it.tdlight.jni.TdApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,9 +22,28 @@ public class TelegramService implements MessageService {
     }
 
     @Override
-    public boolean loginInMessenger(SimpleMessageService simpleMessageService) {
+    public String loginInMessenger(SimpleMessageService simpleMessageService) {
         new Telegram(simpleMessageService);
-        return true;
+        communicateMethods = new SynchronousQueue<CommunicateMethod>();
+        CommunicateMethod authState = new CommunicateMethod();
+        try {
+            communicateMethods.put(authState);
+            TdApi.AuthorizationState authorizationState = (TdApi.AuthorizationState) authState.getResult();
+            if (authorizationState instanceof TdApi.AuthorizationStateReady) {
+                return "Logged in Telegram";
+            } else if (authorizationState instanceof TdApi.AuthorizationStateWaitOtherDeviceConfirmation) {
+                return ((TdApi.AuthorizationStateWaitOtherDeviceConfirmation) authorizationState).link;
+            } else if (authorizationState instanceof TdApi.AuthorizationStateClosing) {
+                return "Closing...";
+            } else if (authorizationState instanceof TdApi.AuthorizationStateClosed) {
+                return "Closed";
+            } else if (authorizationState instanceof TdApi.AuthorizationStateLoggingOut) {
+                return "Logging out...";
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return "error";
     }
 
     @Override

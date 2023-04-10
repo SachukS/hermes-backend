@@ -9,9 +9,11 @@ import com.hysens.hermes.common.repository.ClientRepository;
 import com.hysens.hermes.common.repository.SimpleMessageRepository;
 import com.hysens.hermes.service.message.MessageServiceFactory;
 import com.hysens.hermes.service.message.Messenger;
+import com.hysens.hermes.telegram.client.Telegram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,9 +27,11 @@ public class MessageController {
     @Autowired
     public ClientRepository clientRepository;
 
+    @Async("taskExecutor")
     @PostMapping("/send")
     public void postMessage(@RequestBody SimpleMessage message) {
         LOG.info("---------------------------------------NEW REQUEST-------------------------------------------");
+
         LOG.info("Trying to send message to number: " + message.getReceiverPhone() + " using Telegram if chat with user exists");
         MessageRecipientInfo infoTelegram = new MessageServiceFactory().from(Messenger.TELEGRAM)
                 .sendIfChatWithUserExists("+" + message.getReceiverPhone(), message.getMessage());

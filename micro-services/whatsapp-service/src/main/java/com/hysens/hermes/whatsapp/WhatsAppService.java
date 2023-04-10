@@ -1,14 +1,21 @@
 package com.hysens.hermes.whatsapp;
 
-import com.hysens.hermes.common.service.MessageService;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
+import com.hysens.hermes.common.service.MessageService;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.whatsapp.auth.WhatsAppLogin;
 import com.hysens.hermes.whatsapp.services.MessageSender;
+import com.hysens.hermes.whatsapp.utils.CommunicateMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.SynchronousQueue;
 
 @Service
 public class WhatsAppService implements MessageService {
+    public static final Logger LOG = LoggerFactory.getLogger(WhatsAppService.class);
+    public static SynchronousQueue<CommunicateMethod> communicateMethods;
 
     @Override
     public boolean sendMessage(String phoneNumber, String message) {
@@ -17,9 +24,17 @@ public class WhatsAppService implements MessageService {
     }
 
     @Override
-    public boolean loginInMessenger(SimpleMessageService simpleMessageService) {
+    public String loginInMessenger(SimpleMessageService simpleMessageService) {
         WhatsAppLogin.login(simpleMessageService);
-        return true;
+        communicateMethods = new SynchronousQueue<CommunicateMethod>();
+        CommunicateMethod authState = new CommunicateMethod();
+        try {
+            communicateMethods.put(authState);
+            String url = (String) authState.getResult();
+            return url;
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -28,10 +43,10 @@ public class WhatsAppService implements MessageService {
         if (MessageSender.isChatExists(phoneNumber)) {
             info.setUserExist(true);
             info.setChatWithUserExist(true);
+            LOG.info("Message: " + message + " to " + phoneNumber + " SENDED using WhatsApp");
             sendMessage(phoneNumber, message);
             info.setMessageSended(true);
-        }
-        else {
+        } else {
             if (MessageSender.checkIfUserExist(phoneNumber)) {
                 info.setUserExist(true);
                 info.setChatWithUserExist(true);

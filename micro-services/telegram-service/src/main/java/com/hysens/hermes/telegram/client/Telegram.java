@@ -67,12 +67,11 @@ public class Telegram {
         client.send(level, (ok) -> {
             LOG.info("Verbosity level setted to 1");
         }, throwable -> {});
-
-        try {
-            client.waitForExit();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            client.waitForExit();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -160,7 +159,7 @@ public class Telegram {
                     throw new TelegramPhoneNumberNotFoundException(number);
                 }
             }
-//            simpleMessageService.setTelegramIdByPhone(result.get().id, number);
+            simpleMessageService.setTelegramIdByPhone(result.get().id, number.substring(1));
             info.setUserExist(true);
             info.setUserId(String.valueOf(result.get().id));
             isUserExist.setResult(info);
@@ -216,10 +215,29 @@ public class Telegram {
 
     private static void onUpdateAuthorizationState(TdApi.UpdateAuthorizationState update) {
         TdApi.AuthorizationState authorizationState = update.authorizationState;
+
         if (authorizationState instanceof TdApi.AuthorizationStateReady) {
             if (QRCodeFrame.isEnabled())
                 QRCodeFrame.dispose();
             LOG.info("Logged in Telegram");
+            CommunicateMethod authState = null;
+            try {
+                authState = TelegramService.communicateMethods.take();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            authState.setResult(authorizationState);
+        } else if (authorizationState instanceof TdApi.AuthorizationStateWaitOtherDeviceConfirmation) {
+            if (QRCodeFrame.isEnabled())
+                QRCodeFrame.dispose();
+            LOG.info("Waiting QR");
+            CommunicateMethod authState = null;
+            try {
+                authState = TelegramService.communicateMethods.take();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            authState.setResult(authorizationState);
         } else if (authorizationState instanceof TdApi.AuthorizationStateClosing) {
             LOG.info("Closing...");
         } else if (authorizationState instanceof TdApi.AuthorizationStateClosed) {

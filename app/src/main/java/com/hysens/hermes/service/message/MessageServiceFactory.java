@@ -29,10 +29,10 @@ public class MessageServiceFactory {
         }
     }
 
-    @PostConstruct
-    public void loginToMessangers(){
-        from(Messenger.WHATSAPP).loginInMessenger(simpleMessageService);
-        from(Messenger.TELEGRAM).loginInMessenger(simpleMessageService);
-    }
+//    @PostConstruct
+//    public void loginToMessangers(){
+//        from(Messenger.WHATSAPP).loginInMessenger(simpleMessageService);
+//        from(Messenger.TELEGRAM).loginInMessenger(simpleMessageService);
+//    }
 
 }

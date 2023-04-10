@@ -9,10 +9,9 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.service.SimpleMessageService;
-import com.hysens.hermes.whatsapp.utils.QRAuthorize;
+import com.hysens.hermes.whatsapp.WhatsAppService;
+import com.hysens.hermes.whatsapp.utils.CommunicateMethod;
 import it.auties.whatsapp.api.DisconnectReason;
-import it.auties.whatsapp.api.QrHandler;
-import it.auties.whatsapp.api.SocketEvent;
 import it.auties.whatsapp.listener.Listener;
 import it.auties.whatsapp.model.action.Action;
 import it.auties.whatsapp.model.info.MessageIndexInfo;
@@ -21,12 +20,11 @@ import it.auties.whatsapp.model.message.standard.TextMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.Map;
 
+import static com.hysens.hermes.whatsapp.auth.WhatsAppLogin.QRCodeFrame;
+
 public class WhatsAppListener implements Listener {
-    private JFrame QRCodeFrame = new JFrame();
 
     private SimpleMessageService simpleMessageService;
     public static final Logger LOG = LoggerFactory.getLogger(WhatsAppListener.class);
@@ -34,32 +32,9 @@ public class WhatsAppListener implements Listener {
     public WhatsAppListener(SimpleMessageService simpleMessageService) {
         this.simpleMessageService = simpleMessageService;
     }
+
     public WhatsAppListener() {
     }
-    //    @Override
-//    public QrHandler onQRCode() {
-//        return (qr) -> {
-//            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-//            if (QRCodeFrame.isEnabled())
-//                QRCodeFrame.dispose();
-//
-//            QRCodeFrame.setUndecorated(true);
-//
-//            ImageIcon image = new ImageIcon(
-//                    QRAuthorize.generateQRCodeImage(createMatrix(qr, 256,5))
-//                            .getScaledInstance(256, 256,  Image.SCALE_SMOOTH));
-//
-//            JLabel lbl = new JLabel(image);
-//            QRCodeFrame.getContentPane().add(lbl);
-//            QRCodeFrame.setSize(256, 256);
-//
-//            int x = (screenSize.width - QRCodeFrame.getSize().width)/2;
-//            int y = (screenSize.height - QRCodeFrame.getSize().height)/2;
-//
-//            QRCodeFrame.setLocation(x, y);
-//            QRCodeFrame.setVisible(true);
-//        };
-//    }
 
 
     @Override
@@ -68,8 +43,7 @@ public class WhatsAppListener implements Listener {
                 .content() instanceof TextMessage textMessage)) {
             return;
         }
-        if (!info.fromMe())
-        {
+        if (!info.fromMe()) {
             LOG.warn("Received new message: " + textMessage.text() + " from:" + info.senderJid().toPhoneNumber().substring(1));
 
             SimpleMessage simpleMessage = new SimpleMessage();
@@ -89,6 +63,13 @@ public class WhatsAppListener implements Listener {
             QRCodeFrame.dispose();
         LOG.info("Logged in WhatsApp");
         Listener.super.onLoggedIn();
+        CommunicateMethod authState = null;
+        try {
+            authState = WhatsAppService.communicateMethods.take();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        authState.setResult("Logged in WhatsApp");
     }
 
     @Override
