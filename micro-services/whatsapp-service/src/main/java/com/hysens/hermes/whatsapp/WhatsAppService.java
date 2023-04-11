@@ -16,11 +16,17 @@ import java.util.concurrent.SynchronousQueue;
 public class WhatsAppService implements MessageService {
     public static final Logger LOG = LoggerFactory.getLogger(WhatsAppService.class);
     public static SynchronousQueue<CommunicateMethod> communicateMethods;
+    public static boolean isLogined = false;
 
     @Override
     public boolean sendMessage(String phoneNumber, String message) {
         MessageSender.sendMessage(message, phoneNumber);
         return true;
+    }
+
+    @Override
+    public boolean isMessengerLogined() {
+        return isLogined;
     }
 
     @Override

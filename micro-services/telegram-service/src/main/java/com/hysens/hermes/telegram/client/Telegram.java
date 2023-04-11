@@ -220,6 +220,7 @@ public class Telegram {
             if (QRCodeFrame.isEnabled())
                 QRCodeFrame.dispose();
             LOG.info("Logged in Telegram");
+            TelegramService.isLogined = true;
             CommunicateMethod authState = null;
             try {
                 authState = TelegramService.communicateMethods.take();
@@ -231,6 +232,7 @@ public class Telegram {
             if (QRCodeFrame.isEnabled())
                 QRCodeFrame.dispose();
             LOG.info("Waiting QR");
+            TelegramService.isLogined = false;
             CommunicateMethod authState = null;
             try {
                 authState = TelegramService.communicateMethods.take();
@@ -241,8 +243,10 @@ public class Telegram {
         } else if (authorizationState instanceof TdApi.AuthorizationStateClosing) {
             LOG.info("Closing...");
         } else if (authorizationState instanceof TdApi.AuthorizationStateClosed) {
+            TelegramService.isLogined = false;
             LOG.info("Closed");
         } else if (authorizationState instanceof TdApi.AuthorizationStateLoggingOut) {
+            TelegramService.isLogined = false;
             LOG.info("Logging out...");
         }
     }

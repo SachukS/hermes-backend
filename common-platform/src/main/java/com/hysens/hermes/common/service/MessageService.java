@@ -7,5 +7,7 @@ public interface MessageService {
 
     String loginInMessenger(SimpleMessageService simpleMessageService);
 
+    boolean isMessengerLogined();
+
     MessageRecipientInfo sendIfChatWithUserExists(String phoneNumber, String message);
 }

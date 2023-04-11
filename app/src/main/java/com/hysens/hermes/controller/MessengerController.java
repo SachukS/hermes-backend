@@ -61,6 +61,16 @@ public class MessengerController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/telegram/islogined")
+    public boolean isTelegramLogined() {
+        return new MessageServiceFactory().from(Messenger.TELEGRAM).isMessengerLogined();
+    }
+
+    @GetMapping("/whatsapp/islogined")
+    public boolean isWhatsappLogined() {
+        return new MessageServiceFactory().from(Messenger.WHATSAPP).isMessengerLogined();
+    }
+
     @PostMapping("/contacts")
     public void addContacts(@RequestBody List<Client> clients) {
         clientRepository.saveAll(clients);

@@ -14,11 +14,17 @@ import java.util.concurrent.SynchronousQueue;
 @Service
 public class TelegramService implements MessageService {
     public static SynchronousQueue<CommunicateMethod> communicateMethods;
+    public static boolean isLogined = false;
 
     @Override
     public boolean sendMessage(String userId, String message) {
         Telegram.createChatAndSend(userId, message);
         return true;
+    }
+
+    @Override
+    public boolean isMessengerLogined() {
+        return isLogined;
     }
 
     @Override
