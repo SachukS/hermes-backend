@@ -30,17 +30,9 @@ public class WhatsAppService implements MessageService {
     }
 
     @Override
-    public String loginInMessenger(SimpleMessageService simpleMessageService) {
+    public boolean loginInMessenger(SimpleMessageService simpleMessageService) {
         WhatsAppLogin.login(simpleMessageService);
-        communicateMethods = new SynchronousQueue<CommunicateMethod>();
-        CommunicateMethod authState = new CommunicateMethod();
-        try {
-            communicateMethods.put(authState);
-            String url = (String) authState.getResult();
-            return url;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        return true;
     }
 
     @Override

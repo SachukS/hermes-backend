@@ -27,7 +27,7 @@ public class MessageController {
     @Autowired
     public ClientRepository clientRepository;
 
-    @Async("taskExecutor")
+//    @Async("taskExecutor")
     @PostMapping("/send")
     public void postMessage(@RequestBody SimpleMessage message) {
         LOG.info("---------------------------------------NEW REQUEST-------------------------------------------");

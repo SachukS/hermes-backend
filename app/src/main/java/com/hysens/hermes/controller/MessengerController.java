@@ -44,21 +44,14 @@ public class MessengerController {
     @Autowired
     public SimpleMessageService simpleMessageService;
 
-    @GetMapping("/whatsapp/login")
-    public ResponseEntity<String> loginWhatsapp() {
-        String response = new MessageServiceFactory().from(Messenger.WHATSAPP).loginInMessenger(simpleMessageService);
-        if (response.equals("Logged in WhatsApp"))
-            return ResponseEntity.ok(response);
-        return getQrResponse(response);
+    @PostMapping("/whatsapp/login")
+    public void loginWhatsapp() {
+        new MessageServiceFactory().from(Messenger.WHATSAPP).loginInMessenger(simpleMessageService);
     }
 
-    @GetMapping("/telegram/login")
-    public ResponseEntity<String> loginTelegram() {
-        String response = new MessageServiceFactory().from(Messenger.TELEGRAM).loginInMessenger(simpleMessageService);
-        if (response.contains("tg")) {
-            return getQrResponse(response);
-        }
-        return ResponseEntity.ok(response);
+    @PostMapping("/telegram/login")
+    public void loginTelegram() {
+        new MessageServiceFactory().from(Messenger.TELEGRAM).loginInMessenger(simpleMessageService);
     }
 
     @GetMapping("/telegram/islogined")
