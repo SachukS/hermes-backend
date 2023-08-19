@@ -36,6 +36,17 @@ public class WhatsAppService implements MessageService {
     }
 
     @Override
+    public String logout() {
+        return MessageSender.logout();
+    }
+
+    @Override
+    public String getQR() {
+        if (!isLogined)
+            return WhatsAppLogin.WhatsappQr;
+        return "Logged in WhatsApp";
+    }
+    @Override
     public MessageRecipientInfo sendIfChatWithUserExists(String phoneNumber, String message) {
         MessageRecipientInfo info = new MessageRecipientInfo();
         if (MessageSender.isChatExists(phoneNumber)) {

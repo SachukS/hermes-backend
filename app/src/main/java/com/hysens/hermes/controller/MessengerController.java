@@ -54,6 +54,33 @@ public class MessengerController {
         new MessageServiceFactory().from(Messenger.TELEGRAM).loginInMessenger(simpleMessageService);
     }
 
+    @GetMapping("/telegram/logout")
+    public String tgLogout() {
+        return new MessageServiceFactory().from(Messenger.TELEGRAM).logout();
+    }
+
+    @GetMapping("/whatsapp/logout")
+    public String waLogout() {
+        return new MessageServiceFactory().from(Messenger.WHATSAPP).logout();
+    }
+
+    @GetMapping("/whatsapp/login/qr")
+    public ResponseEntity<String> getWaQr() {
+        String response = new MessageServiceFactory().from(Messenger.WHATSAPP).getQR();
+        if (response.equals("Logged in WhatsApp"))
+            return ResponseEntity.ok(response);
+        return getQrResponse(response);
+    }
+
+    @GetMapping("/telegram/login/qr")
+    public ResponseEntity<String> getTgQr() {
+        String response = new MessageServiceFactory().from(Messenger.TELEGRAM).getQR();
+        if (response.contains("tg")) {
+            return getQrResponse(response);
+        }
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/telegram/islogined")
     public boolean isTelegramLogined() {
         return new MessageServiceFactory().from(Messenger.TELEGRAM).isMessengerLogined();

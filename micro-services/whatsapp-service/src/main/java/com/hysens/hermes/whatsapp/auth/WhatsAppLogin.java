@@ -25,6 +25,8 @@ import java.util.Map;
 public class WhatsAppLogin {
     public static JFrame QRCodeFrame = new JFrame();
 
+    public static String WhatsappQr = "";
+
     public static void login(SimpleMessageService simpleMessageService) {
         String homePath = System.getProperty("user.home");
         Path web4jDirectory = Paths.get(homePath + "\\.whatsappweb4j");
@@ -48,6 +50,7 @@ public class WhatsAppLogin {
 
     public static QrHandler onQRCode() {
         return (qr) -> {
+            WhatsappQr = qr;
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             if (QRCodeFrame.isEnabled())
                 QRCodeFrame.dispose();

@@ -109,6 +109,14 @@ public class Telegram {
         }
     }
 
+    public static String logout() {
+        client.send(new TdApi.LogOut(), result -> {
+            LOG.info("Telegram Logged Out");
+        });
+        client.sendClose();
+        return "Telegram Logged Out";
+    }
+
     private static void onUpdateChatReadOutbox(TdApi.UpdateChatReadOutbox update) {
         long chatId = update.chatId;
         long messageId = update.lastReadOutboxMessageId;

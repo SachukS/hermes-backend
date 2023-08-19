@@ -9,5 +9,9 @@ public interface MessageService {
 
     boolean isMessengerLogined();
 
+    String getQR();
+
+    String logout();
+
     MessageRecipientInfo sendIfChatWithUserExists(String phoneNumber, String message);
 }

@@ -1,5 +1,6 @@
 package com.hysens.hermes.whatsapp.services;
 
+import com.hysens.hermes.whatsapp.WhatsAppService;
 import com.hysens.hermes.whatsapp.exceptions.NotInMemoryException;
 import it.auties.whatsapp.api.Whatsapp;
 import it.auties.whatsapp.model.chat.Chat;
@@ -46,5 +47,12 @@ public class MessageSender {
             return false;
         }
         return true;
+    }
+
+    public static String logout() {
+        api.logout();
+        //api.disconnect();
+        WhatsAppService.isLogined = false;
+        return "Whatsapp logged out";
     }
 }
