@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -74,6 +75,12 @@ public class MessageController {
             message.setFromMe(true);
             message.setMessageStatus(MessageStatusEnum.SENT);
             client.setLastMessage(message);
+            if (!client.getMessengers().contains(message.getMessenger())) {
+                List<String> exist = new ArrayList<>();
+                exist.addAll(client.getMessengers());
+                exist.add(message.getMessenger());
+                client.setMessengers(exist);
+            }
             clientRepository.save(client);
         }
 

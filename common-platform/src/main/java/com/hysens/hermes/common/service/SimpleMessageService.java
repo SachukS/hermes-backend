@@ -8,6 +8,9 @@ import com.hysens.hermes.common.repository.SimpleMessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class SimpleMessageService {
     @Autowired
@@ -23,6 +26,12 @@ public class SimpleMessageService {
             client = clientRepository.findByTelegramId(telegramId);
         simpleMessage.setClientId(client.getId());
         client.setLastMessage(simpleMessage);
+        if (!client.getMessengers().contains(simpleMessage.getMessenger())) {
+            List<String> exist = new ArrayList<>();
+            exist.addAll(client.getMessengers());
+            exist.add(simpleMessage.getMessenger());
+            client.setMessengers(exist);
+        }
         clientRepository.save(client);
     }
 
