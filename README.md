@@ -1,7 +1,7 @@
 
 # Hermes Message Agregator
 
-A brief description how to run this project.
+This is backend for Hermes project.
 
 
 ## Features
@@ -11,10 +11,20 @@ A brief description how to run this project.
 - Send message using Telegram
 - Send message using WhatsApp
 
+## Requirements
+
+- JDK `17.0.2`
+- Postman
+- Postgres `9.5.25`
+- Maven
 
 ## Run Locally
+Clone the project
 
-This project requires **JDK17**.
+```bash
+  git clone https://sachukoleksandr@bitbucket.org/VGordejevs/hermes-backend.git
+```
+Open project with editor (Idea).
 
 Before running please add this **VM option** in Run/Depug Configurations tab:
 
@@ -24,41 +34,8 @@ Before running please add this **VM option** in Run/Depug Configurations tab:
 
 
 
-## Usage/Testing
-For testing you can use Postman. First of all you need to login in yours WhatsApp and Telegram accounts. Send next requests:
-
-
-
-#### To login in Telegram send this POST request:
-```bash
-http://localhost:8080/api/v1/messenger/telegram/login
+## Usage
+As it is just backend part for using you need to start front
+```http
+https://sachukoleksandr@bitbucket.org/develSO/hermes-frontend.git
 ```
-In your console will be request for submit code sended to you. All subsequent starts of the application needs the same procedure, but without confirming login.
-
-
-
-#### To login in WhatsApp send this POST request:
-
-
-```bash
-http://localhost:8080/api/v1/messenger/whatsapp/login
-```
-QrCode will appear on you screen, scan it with your phone in WhatsApp app (connectred devices tab).
-All subsequent starts of the application needs the same procedure, but without confirming login.
-
-
-#### To send message create POST request:
-
-```bash
-http://localhost:8080/api/v1/message/send
-```
-
-with json body:
-
-```json
-{
-    "phoneNumber": "380222222222",
-    "text": "test"
-}
-```
-
