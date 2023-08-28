@@ -32,6 +32,14 @@ public class Partner {
     public Partner() {
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
@@ -118,5 +126,23 @@ public class Partner {
 
     public void setModifyDateTime(LocalDateTime modifyDateTime) {
         this.modifyDateTime = modifyDateTime;
+    }
+
+    @Override
+    public String toString() {
+        return "Partner{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", country='" + country + '\'' +
+                ", registrationNumber='" + registrationNumber + '\'' +
+                ", phone='" + phone + '\'' +
+                ", email='" + email + '\'' +
+                ", logo='" + logo + '\'' +
+                ", executionTime=" + executionTime +
+                ", responseTime=" + responseTime +
+                ", responseNotification=" + responseNotification +
+                ", createdDateTime=" + createdDateTime +
+                ", modifyDateTime=" + modifyDateTime +
+                '}';
     }
 }
