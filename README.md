@@ -32,6 +32,8 @@ Before running please add this **VM option** in Run/Depug Configurations tab:
   -Djava.awt.headless=false
 ```
 
+Also you need to change `postges` credentials in `application.yaml` and create empty database `hermes`
+
 
 
 ## Usage
