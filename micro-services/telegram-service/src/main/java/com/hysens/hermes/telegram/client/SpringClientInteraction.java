@@ -9,11 +9,18 @@ import java.awt.*;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+
 import static com.hysens.hermes.telegram.client.Telegram.QRCodeFrame;
 
 public class SpringClientInteraction implements ClientInteraction {
     private final ExecutorService blockingExecutor;
     private final Authenticable authenticable;
+
+    public static String qr = "";
 
     public SpringClientInteraction(ExecutorService blockingExecutor, Authenticable authenticable) {
         this.blockingExecutor = blockingExecutor;
@@ -92,6 +99,8 @@ public class SpringClientInteraction implements ClientInteraction {
                             QRCodeFrame.dispose();
 
                         QRCodeFrame.setUndecorated(true);
+
+                        qr = link;
 
                         ImageIcon image = new ImageIcon(
                                 QRAuthorize.getQr(link)

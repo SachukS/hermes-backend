@@ -109,6 +109,14 @@ public class Telegram {
         }
     }
 
+    public static String logout() {
+        client.send(new TdApi.LogOut(), result -> {
+            LOG.info("Telegram Logged Out");
+        });
+        client.sendClose();
+        return "Telegram Logged Out";
+    }
+
     private static void onUpdateChatReadOutbox(TdApi.UpdateChatReadOutbox update) {
         long chatId = update.chatId;
         long messageId = update.lastReadOutboxMessageId;
@@ -221,25 +229,25 @@ public class Telegram {
                 QRCodeFrame.dispose();
             LOG.info("Logged in Telegram");
             TelegramService.isLogined = true;
-            CommunicateMethod authState = null;
-            try {
-                authState = TelegramService.communicateMethods.take();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            authState.setResult(authorizationState);
-        } else if (authorizationState instanceof TdApi.AuthorizationStateWaitOtherDeviceConfirmation) {
-            if (QRCodeFrame.isEnabled())
-                QRCodeFrame.dispose();
-            LOG.info("Waiting QR");
-            TelegramService.isLogined = false;
-            CommunicateMethod authState = null;
-            try {
-                authState = TelegramService.communicateMethods.take();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            authState.setResult(authorizationState);
+//            CommunicateMethod authState = null;
+//            try {
+//                authState = TelegramService.communicateMethods.take();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            authState.setResult(authorizationState);
+//        } else if (authorizationState instanceof TdApi.AuthorizationStateWaitOtherDeviceConfirmation) {
+//            if (QRCodeFrame.isEnabled())
+//                QRCodeFrame.dispose();
+//            LOG.info("Waiting QR");
+//            TelegramService.isLogined = false;
+//            CommunicateMethod authState = null;
+//            try {
+//                authState = TelegramService.communicateMethods.take();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            authState.setResult(authorizationState);
         } else if (authorizationState instanceof TdApi.AuthorizationStateClosing) {
             LOG.info("Closing...");
         } else if (authorizationState instanceof TdApi.AuthorizationStateClosed) {

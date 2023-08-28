@@ -3,6 +3,7 @@ package com.hysens.hermes.telegram.service;
 import com.hysens.hermes.common.service.MessageService;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 import com.hysens.hermes.common.service.SimpleMessageService;
+import com.hysens.hermes.telegram.client.SpringClientInteraction;
 import com.hysens.hermes.telegram.client.Telegram;
 import com.hysens.hermes.telegram.config.CommunicateMethod;
 import it.tdlight.jni.TdApi;
@@ -28,28 +29,19 @@ public class TelegramService implements MessageService {
     }
 
     @Override
-    public String loginInMessenger(SimpleMessageService simpleMessageService) {
+    public boolean loginInMessenger(SimpleMessageService simpleMessageService) {
         new Telegram(simpleMessageService);
-        communicateMethods = new SynchronousQueue<CommunicateMethod>();
-        CommunicateMethod authState = new CommunicateMethod();
-        try {
-            communicateMethods.put(authState);
-            TdApi.AuthorizationState authorizationState = (TdApi.AuthorizationState) authState.getResult();
-            if (authorizationState instanceof TdApi.AuthorizationStateReady) {
-                return "Logged in Telegram";
-            } else if (authorizationState instanceof TdApi.AuthorizationStateWaitOtherDeviceConfirmation) {
-                return ((TdApi.AuthorizationStateWaitOtherDeviceConfirmation) authorizationState).link;
-            } else if (authorizationState instanceof TdApi.AuthorizationStateClosing) {
-                return "Closing...";
-            } else if (authorizationState instanceof TdApi.AuthorizationStateClosed) {
-                return "Closed";
-            } else if (authorizationState instanceof TdApi.AuthorizationStateLoggingOut) {
-                return "Logging out...";
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        return "error";
+        return true;
+    }
+
+    @Override
+    public String logout() {
+        return Telegram.logout();
+    }
+
+    @Override
+    public String getQR() {
+        return SpringClientInteraction.qr;
     }
 
     @Override

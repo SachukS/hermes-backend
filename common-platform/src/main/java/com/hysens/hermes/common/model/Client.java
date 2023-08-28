@@ -3,6 +3,7 @@ package com.hysens.hermes.common.model;
 import com.hysens.hermes.common.model.enums.ChatStatusEnum;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.model.enums.MessengerEnum;
+import com.hysens.hermes.common.util.StringListConverter;
 import net.bytebuddy.implementation.bind.annotation.Default;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
@@ -32,16 +33,19 @@ public class Client {
     @CreationTimestamp
     private LocalDateTime createdDateTime;
     private String country;
-    private long messengers;
+    @Convert(converter = StringListConverter.class)
+    private List<String> messengers;
+    @Convert(converter = StringListConverter.class)
+    private List<String> tags;
+    private String notes;
 
-    public Client(boolean isOnline, String name, String surname, String phone, String email, String country, long messengers) {
+    public Client(boolean isOnline, String name, String surname, String phone, String email, String country) {
         this.isOnline = isOnline;
         this.name = name;
         this.surname = surname;
         this.phone = phone;
         this.email = email;
         this.country = country;
-        this.messengers = messengers;
     }
 
     public Client(String phone) {
@@ -62,6 +66,22 @@ public class Client {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public SimpleMessage getLastMessage() {
@@ -160,11 +180,11 @@ public class Client {
         this.country = country;
     }
 
-    public long getMessengers() {
+    public List<String> getMessengers() {
         return messengers;
     }
 
-    public void setMessengers(long messengers) {
+    public void setMessengers(List<String> messengers) {
         this.messengers = messengers;
     }
 

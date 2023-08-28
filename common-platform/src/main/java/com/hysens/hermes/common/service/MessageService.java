@@ -5,9 +5,13 @@ import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 public interface MessageService {
     boolean sendMessage(String phoneNumberOrId, String message);
 
-    String loginInMessenger(SimpleMessageService simpleMessageService);
+    boolean loginInMessenger(SimpleMessageService simpleMessageService);
 
     boolean isMessengerLogined();
+
+    String getQR();
+
+    String logout();
 
     MessageRecipientInfo sendIfChatWithUserExists(String phoneNumber, String message);
 }

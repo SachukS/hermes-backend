@@ -64,13 +64,13 @@ public class WhatsAppListener implements Listener {
         LOG.info("Logged in WhatsApp");
         WhatsAppService.isLogined = true;
         Listener.super.onLoggedIn();
-        CommunicateMethod authState = null;
-        try {
-            authState = WhatsAppService.communicateMethods.take();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        authState.setResult("Logged in WhatsApp");
+//        CommunicateMethod authState = null;
+//        try {
+//            authState = WhatsAppService.communicateMethods.take();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        authState.setResult("Logged in WhatsApp");
     }
 
     @Override
