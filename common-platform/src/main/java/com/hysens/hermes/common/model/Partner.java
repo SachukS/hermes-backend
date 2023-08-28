@@ -1,8 +1,11 @@
 package com.hysens.hermes.common.model;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -12,37 +15,21 @@ public class Partner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String name;
-    private long countryId;
+    private String country;
     private String registrationNumber;
-    private long phoneId;
+    private String phone;
     private String email;
     private String logo;
+    private int executionTime;
+    private int responseTime;
+    private int responseNotification;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createdDate;
+    @CreationTimestamp
+    private LocalDateTime createdDateTime;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date modifyDate;
+    private LocalDateTime modifyDateTime;
 
     public Partner() {
-    }
-
-    public Partner(String name, long countryId, String registrationNumber,
-                   long phoneId, String email, String logo, Date createdDate, Date modifyDate) {
-        this.name = name;
-        this.countryId = countryId;
-        this.registrationNumber = registrationNumber;
-        this.phoneId = phoneId;
-        this.email = email;
-        this.logo = logo;
-        this.createdDate = createdDate;
-        this.modifyDate = modifyDate;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -53,12 +40,36 @@ public class Partner {
         this.name = name;
     }
 
-    public long getCountryId() {
-        return countryId;
+    public String getCountry() {
+        return country;
     }
 
-    public void setCountryId(long countryId) {
-        this.countryId = countryId;
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public int getExecutionTime() {
+        return executionTime;
+    }
+
+    public void setExecutionTime(int executionTime) {
+        this.executionTime = executionTime;
+    }
+
+    public int getResponseTime() {
+        return responseTime;
+    }
+
+    public void setResponseTime(int responseTime) {
+        this.responseTime = responseTime;
+    }
+
+    public int getResponseNotification() {
+        return responseNotification;
+    }
+
+    public void setResponseNotification(int responseNotification) {
+        this.responseNotification = responseNotification;
     }
 
     public String getRegistrationNumber() {
@@ -69,12 +80,12 @@ public class Partner {
         this.registrationNumber = registrationNumber;
     }
 
-    public long getPhoneId() {
-        return phoneId;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setPhoneId(long phoneId) {
-        this.phoneId = phoneId;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getEmail() {
@@ -93,19 +104,19 @@ public class Partner {
         this.logo = logo;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
+    public LocalDateTime getCreatedDateTime() {
+        return createdDateTime;
     }
 
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
+    public void setCreatedDateTime(LocalDateTime createdDateTime) {
+        this.createdDateTime = createdDateTime;
     }
 
-    public Date getModifyDate() {
-        return modifyDate;
+    public LocalDateTime getModifyDateTime() {
+        return modifyDateTime;
     }
 
-    public void setModifyDate(Date modifyDate) {
-        this.modifyDate = modifyDate;
+    public void setModifyDateTime(LocalDateTime modifyDateTime) {
+        this.modifyDateTime = modifyDateTime;
     }
 }
