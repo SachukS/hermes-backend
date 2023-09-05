@@ -3,7 +3,6 @@ package com.hysens.hermes.controller;
 import com.hysens.hermes.common.model.Client;
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
-import com.hysens.hermes.common.pojo.Message;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 import com.hysens.hermes.common.repository.ClientRepository;
 import com.hysens.hermes.common.repository.SimpleMessageRepository;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/v1/message")
 public class MessageController {

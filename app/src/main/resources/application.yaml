@@ -20,3 +20,8 @@ spring:
 logging:
   level:
     org.springframework: INFO
+
+hermes:
+  app:
+    jwtExpirationMs: '86400000'
+    jwtSecret: hermesSecret
