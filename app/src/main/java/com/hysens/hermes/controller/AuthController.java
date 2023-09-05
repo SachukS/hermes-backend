@@ -61,11 +61,14 @@ public class AuthController {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
+        PartnerUser partnerUser = partnerUserRepository.findByUsername(loginRequest.getUsername()).get();
+
         return ResponseEntity.ok(new JwtResponse(jwt,
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
-                roles));
+                roles,
+                partnerUser.getPartner().getId()));
     }
 
     @PostMapping("/register")
