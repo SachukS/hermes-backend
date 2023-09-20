@@ -1,5 +1,6 @@
 package com.hysens.hermes.whatsapp.services;
 
+import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.whatsapp.WhatsAppService;
 import com.hysens.hermes.whatsapp.exceptions.NotInMemoryException;
 import it.auties.whatsapp.api.Whatsapp;
@@ -17,11 +18,13 @@ public class MessageSender {
         this.api = api;
     }
 
-    public static void sendMessage(String message, String number) {
-        String contactJID = number + "@s.whatsapp.net";
+    public static SimpleMessage sendMessage(SimpleMessage simpleMessage) {
+        String contactJID = simpleMessage.getReceiverPhone() + "@s.whatsapp.net";
         Chat chat = Chat.ofJid(ContactJid.of(contactJID));
-        api.sendMessage(chat, message);
-        LOG.info("Message: " + message + " to " + number + " SENDED using WhatsApp");
+        api.sendMessage(chat, simpleMessage.getMessage());
+        simpleMessage.setMessenger("Whatsapp");
+        LOG.info("Message: " + simpleMessage.getMessage() + " to " + simpleMessage.getReceiverPhone() + " SENDED using WhatsApp");
+        return simpleMessage;
     }
 
     public static boolean isChatExists(String number) {

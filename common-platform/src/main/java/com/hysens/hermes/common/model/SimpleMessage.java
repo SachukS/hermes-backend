@@ -2,14 +2,10 @@ package com.hysens.hermes.common.model;
 
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -23,6 +19,7 @@ public class SimpleMessage {
     private long clientId;
     private String messenger;
     private String message;
+    private long messageSpecId;
     @Enumerated(EnumType.STRING)
     private MessageStatusEnum messageStatus;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -51,6 +48,14 @@ public class SimpleMessage {
 
     public String getReceiverPhone() {
         return receiverPhone;
+    }
+
+    public long getMessageSpecId() {
+        return messageSpecId;
+    }
+
+    public void setMessageSpecId(long messageSpecId) {
+        this.messageSpecId = messageSpecId;
     }
 
     public void setReceiverPhone(String receiverPhone) {

@@ -3,7 +3,7 @@ package com.hysens.hermes.common.model.enums;
 import java.util.Arrays;
 
 public enum MessageStatusEnum {
-    SENT("SENT"), READ("READ"), UNREAD("UNREAD");
+    SENT("SENT"), READ("READ"), OPENED("OPENED"), NEW("NEW"), PROCESSING("PROCESSING"), FAILED("FAILED");
 
     private String name;
 

@@ -31,31 +31,46 @@ public class MessageController {
 //    @Async("taskExecutor")
     @PostMapping("/send")
     public void postMessage(@RequestBody SimpleMessage message) {
+        message.setFromMe(true);
+        message.setMessageStatus(MessageStatusEnum.PROCESSING);
+        message = simpleMessageRepository.save(message);
         LOG.info("---------------------------------------NEW REQUEST-------------------------------------------");
 
         LOG.info("Trying to send message to number: " + message.getReceiverPhone() + " using Telegram if chat with user exists");
-        MessageRecipientInfo infoTelegram = new MessageServiceFactory().from(Messenger.TELEGRAM)
-                .sendIfChatWithUserExists("+" + message.getReceiverPhone(), message.getMessage());
-//        MessageRecipientInfo infoTelegram = new MessageRecipientInfo();
-//        infoTelegram.setMessageSended(false);
-//        infoTelegram.setUserExist(false);
-//        infoTelegram.setChatWithUserExist(false);
-
+        MessageRecipientInfo infoTelegram = new MessageRecipientInfo();
+        try {
+             infoTelegram = new MessageServiceFactory().from(Messenger.TELEGRAM)
+                    .sendIfChatWithUserExists(message);
+        }
+        catch (Exception e) {
+            LOG.error(e.getMessage());
+            infoTelegram.setMessageSended(false);
+            infoTelegram.setUserExist(false);
+            infoTelegram.setChatWithUserExist(false);
+        }
+//
         MessageRecipientInfo infoWhatsapp = new MessageRecipientInfo();
         if (!infoTelegram.isMessageSended()){
             LOG.info("Trying to send message to number: " + message.getReceiverPhone() + " using WhatsApp if chat with user exists");
+            try {
             infoWhatsapp = new MessageServiceFactory().from(Messenger.WHATSAPP)
-                    .sendIfChatWithUserExists(message.getReceiverPhone(), message.getMessage());
+                    .sendIfChatWithUserExists(message);
+            } catch (Exception e) {
+                LOG.error(e.getMessage());
+                infoWhatsapp.setMessageSended(false);
+                infoWhatsapp.setUserExist(false);
+                infoWhatsapp.setChatWithUserExist(false);
+            }
             if (!infoWhatsapp.isMessageSended()){
                 if (infoTelegram.isUserExist()){
                     LOG.info("Trying to send message to number: " + message.getReceiverPhone() + " using Telegram");
                     new MessageServiceFactory().from(Messenger.TELEGRAM)
-                            .sendMessage(infoTelegram.getUserId(), message.getMessage());
+                            .sendMessage(infoTelegram.getUserId(), message);
                     infoTelegram.setMessageSended(true);
                 } else if (infoWhatsapp.isUserExist()) {
                     LOG.info("Trying to send message to number: " + message.getReceiverPhone() + " using WhatsApp");
                     new MessageServiceFactory().from(Messenger.WHATSAPP)
-                            .sendMessage(message.getReceiverPhone(), message.getMessage());
+                            .sendMessage(message.getReceiverPhone(), message);
                     infoWhatsapp.setMessageSended(true);
                 }
             }
@@ -64,26 +79,21 @@ public class MessageController {
         Client client = clientRepository.findByPhone(message.getReceiverPhone());
         if (infoTelegram.isMessageSended()) {
             client.setTelegramId(Long.parseLong(infoTelegram.getUserId()));
-            message.setMessenger("Telegram");
         }
-        if (infoWhatsapp.isMessageSended())
-            message.setMessenger("Whatsapp");
         if (!infoTelegram.isMessageSended() && !infoWhatsapp.isMessageSended()) {
+            message.setMessageStatus(MessageStatusEnum.FAILED);
             LOG.error("The user with number: " + message.getReceiverPhone() + " don't have accounts in telegram and whatsapp");
         }
         else {
-            message.setFromMe(true);
-            message.setMessageStatus(MessageStatusEnum.SENT);
-            client.setLastMessage(message);
             if (!client.getMessengers().contains(message.getMessenger())) {
                 List<String> exist = new ArrayList<>();
                 exist.addAll(client.getMessengers());
                 exist.add(message.getMessenger());
                 client.setMessengers(exist);
             }
-            clientRepository.save(client);
         }
-
+        client.setLastMessage(message);
+        clientRepository.save(client);
     }
     @GetMapping("/load/{id}")
     public List<SimpleMessage> getMessages(@PathVariable("id") long id) {
@@ -92,7 +102,7 @@ public class MessageController {
 
     @PostMapping("/read")
     public void setMessageStatusRead(@RequestBody List<SimpleMessage> messages) {
-        messages.forEach(message -> message.setMessageStatus(MessageStatusEnum.READ));
+        messages.forEach(message -> message.setMessageStatus(MessageStatusEnum.OPENED));
         simpleMessageRepository.saveAll(messages);
     }
 }

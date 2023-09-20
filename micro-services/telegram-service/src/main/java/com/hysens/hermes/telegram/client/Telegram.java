@@ -2,8 +2,8 @@ package com.hysens.hermes.telegram.client;
 
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
+import com.hysens.hermes.common.model.enums.MessengerEnum;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
-import com.hysens.hermes.common.repository.SimpleMessageRepository;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.telegram.config.CommunicateMethod;
 import com.hysens.hermes.telegram.exception.TelegramChatWithUserNotFoundException;
@@ -17,10 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 
 public class Telegram {
     private static SimpleMessageService simpleMessageService;
@@ -61,6 +59,10 @@ public class Telegram {
 
         client.addUpdateHandler(TdApi.UpdateNewMessage.class, Telegram::onUpdateNewMessage);
 
+        client.addUpdateHandler(TdApi.UpdateMessageSendSucceeded.class, Telegram::onUpdateMessageSendSucceeded);
+
+        client.addUpdateHandler(TdApi.UpdateMessageSendFailed.class, Telegram::onUpdateMessageSendFailed);
+
         client.start(authenticationData);
 
         TdApi.SetLogVerbosityLevel level = new TdApi.SetLogVerbosityLevel(1);
@@ -73,6 +75,17 @@ public class Telegram {
 //            e.printStackTrace();
 //        }
 
+    }
+    private static void onUpdateMessageSendFailed(TdApi.UpdateMessageSendFailed update) {
+        SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(update.oldMessageId);
+        simpleMessage.setMessageStatus(MessageStatusEnum.FAILED);
+        simpleMessageService.save(simpleMessage);
+    }
+    private static void onUpdateMessageSendSucceeded(TdApi.UpdateMessageSendSucceeded update) {
+        SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(update.oldMessageId);
+        simpleMessage.setMessageSpecId(update.message.id);
+        simpleMessage.setMessageStatus(MessageStatusEnum.SENT);
+        simpleMessageService.save(simpleMessage);
     }
 
     private static void onUpdateNewMessage(TdApi.UpdateNewMessage update) {
@@ -99,7 +112,7 @@ public class Telegram {
                     simpleMessage.setSenderPhone(user.phoneNumber);
                     simpleMessage.setFromMe(false);
                     simpleMessage.setMessenger("Telegram");
-                    simpleMessage.setMessageStatus(MessageStatusEnum.UNREAD);
+                    simpleMessage.setMessageStatus(MessageStatusEnum.NEW);
                     simpleMessageService.saveWithoutClientId(simpleMessage, user.id);
                 }
                 catch (TelegramError e) {
@@ -121,23 +134,7 @@ public class Telegram {
         long chatId = update.chatId;
         long messageId = update.lastReadOutboxMessageId;
 
-        client.send(new TdApi.GetMessage(chatId, messageId), messageResult -> {
-            TdApi.Message message = messageResult.get();
-            TdApi.MessageContent messageContent = message.content;
-            String text;
-            if (messageContent instanceof TdApi.MessageText) {
-                text = ((TdApi.MessageText) messageContent).text.text;
-            } else {
-                text = String.format("(%s)", messageContent.getClass().getSimpleName());
-            }
-            client.send(new TdApi.GetChat(chatId), chatIdResult -> {
-                TdApi.Chat chat = chatIdResult.get();
-                String chatName = chat.title;
-                LOG.info("Message: " + text + " to " + chatName + " - READ");
-            });
-
-        });
-
+        simpleMessageService.setReadStatusInTelegram(chatId);
     }
 
     private static class StopCommandHandler implements CommandHandler {
@@ -174,7 +171,7 @@ public class Telegram {
         }, Telegram::springHandleResultHandlingException);
     }
 
-    public static void isChatExist(String userId, String message, MessageRecipientInfo info) {
+    public static void isChatExist(String userId, SimpleMessage simpleMessage, MessageRecipientInfo info) {
         client.send(new TdApi.GetChat(Long.parseLong(userId)), result -> {
             CommunicateMethod isChatExistAndSended = null;
             try {
@@ -188,32 +185,38 @@ public class Telegram {
                     throw new TelegramChatWithUserNotFoundException(userId);
                 }
             }
-            sendMessage(Long.parseLong(userId), result.get().title, message, info, isChatExistAndSended);
+            sendMessage(Long.parseLong(userId), result.get().title, simpleMessage, info, isChatExistAndSended);
             info.setChatWithUserExist(true);
         }, Telegram::springHandleResultHandlingException);
     }
-    public static void createChatAndSend(String userId, String message) {
+    public static void createChatAndSend(String userId, SimpleMessage simpleMessage) {
         client.send(new TdApi.CreatePrivateChat(Long.parseLong(userId), false), result -> {
             TdApi.Chat chat = result.get();
-            sendMessage(chat.id, chat.title, message);
+            sendMessage(chat.id, chat.title, simpleMessage);
         });
     }
 
-    private static void sendMessage(long id, String title, String message) {
-        TdApi.InputMessageContent content = new TdApi.InputMessageText(new TdApi.FormattedText(message, null), false, true);
+    private static void sendMessage(long id, String title, SimpleMessage simpleMessage) {
+        TdApi.InputMessageContent content = new TdApi.InputMessageText(new TdApi.FormattedText(simpleMessage.getMessage(), null), false, true);
         client.send(new TdApi.SendMessage(id, 0, 0, null, null, content), result -> {
             TdApi.Message sendedMessage = result.get();
-            LOG.info("Message: " + message + " to " + title + " SENDED using Telegram");
+            simpleMessage.setMessageSpecId(sendedMessage.id);
+            simpleMessage.setMessenger("Telegram");
+            simpleMessageService.save(simpleMessage);
+            LOG.info("Message: " + simpleMessage.getMessage() + " to " + title + " SENDED using Telegram" + sendedMessage.id);
         });
     }
 
-    private static void sendMessage(long id, String title, String message, MessageRecipientInfo info, CommunicateMethod communicateMethod) {
-        TdApi.InputMessageContent content = new TdApi.InputMessageText(new TdApi.FormattedText(message, null), false, true);
+    private static void sendMessage(long id, String title, SimpleMessage simpleMessage, MessageRecipientInfo info, CommunicateMethod communicateMethod) {
+        TdApi.InputMessageContent content = new TdApi.InputMessageText(new TdApi.FormattedText(simpleMessage.getMessage(), null), false, true);
         client.send(new TdApi.SendMessage(id, 0, 0, null, null, content), result -> {
             TdApi.Message sendedMessage = result.get();
             info.setMessageSended(true);
             communicateMethod.setResult(info);
-            LOG.info("Message: " + message + " to " + title + " SENDED using Telegram");
+            simpleMessage.setMessageSpecId(sendedMessage.id);
+            simpleMessage.setMessenger("Telegram");
+            simpleMessageService.save(simpleMessage);
+            LOG.info("Message: " + simpleMessage.getMessage() + " to " + title + " SENDED using Telegram"+ sendedMessage.id);
         });
     }
 

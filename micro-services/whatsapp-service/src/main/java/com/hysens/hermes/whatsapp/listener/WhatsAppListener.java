@@ -51,7 +51,7 @@ public class WhatsAppListener implements Listener {
             simpleMessage.setSenderPhone(info.senderJid().toPhoneNumber().substring(1));
             simpleMessage.setFromMe(false);
             simpleMessage.setMessenger("Whatsapp");
-            simpleMessage.setMessageStatus(MessageStatusEnum.UNREAD);
+            simpleMessage.setMessageStatus(MessageStatusEnum.NEW);
             simpleMessageService.saveWithoutClientId(simpleMessage, 0L);
         }
         Listener.super.onNewMessage(info);

@@ -1,13 +1,12 @@
 package com.hysens.hermes.telegram.service;
 
+import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.service.MessageService;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.telegram.client.SpringClientInteraction;
 import com.hysens.hermes.telegram.client.Telegram;
 import com.hysens.hermes.telegram.config.CommunicateMethod;
-import it.tdlight.jni.TdApi;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.SynchronousQueue;
@@ -18,8 +17,8 @@ public class TelegramService implements MessageService {
     public static boolean isLogined = false;
 
     @Override
-    public boolean sendMessage(String userId, String message) {
-        Telegram.createChatAndSend(userId, message);
+    public boolean sendMessage(String userId, SimpleMessage simpleMessage) {
+        Telegram.createChatAndSend(userId, simpleMessage);
         return true;
     }
 
@@ -45,8 +44,8 @@ public class TelegramService implements MessageService {
     }
 
     @Override
-    public MessageRecipientInfo sendIfChatWithUserExists(String phoneNumber, String message) {
-        Telegram.findUser(phoneNumber);
+    public MessageRecipientInfo sendIfChatWithUserExists(SimpleMessage simpleMessage) {
+        Telegram.findUser("+" + simpleMessage.getReceiverPhone());
         MessageRecipientInfo info = new MessageRecipientInfo();
         communicateMethods = new SynchronousQueue<CommunicateMethod>();
         CommunicateMethod isUserExist = new CommunicateMethod();
@@ -57,7 +56,7 @@ public class TelegramService implements MessageService {
             e.printStackTrace();
         }
         if (info.isUserExist()) {
-            Telegram.isChatExist(String.valueOf(info.getUserId()), message, info);
+            Telegram.isChatExist(String.valueOf(info.getUserId()), simpleMessage, info);
             CommunicateMethod isChatExistAndSended = new CommunicateMethod();
             try {
                 communicateMethods.put(isChatExistAndSended);

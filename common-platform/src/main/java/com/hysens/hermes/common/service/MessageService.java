@@ -1,9 +1,10 @@
 package com.hysens.hermes.common.service;
 
+import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 
 public interface MessageService {
-    boolean sendMessage(String phoneNumberOrId, String message);
+    boolean sendMessage(String phoneNumberOrId, SimpleMessage simpleMessage);
 
     boolean loginInMessenger(SimpleMessageService simpleMessageService);
 
@@ -13,5 +14,5 @@ public interface MessageService {
 
     String logout();
 
-    MessageRecipientInfo sendIfChatWithUserExists(String phoneNumber, String message);
+    MessageRecipientInfo sendIfChatWithUserExists(SimpleMessage simpleMessage);
 }

@@ -2,7 +2,7 @@ package com.hysens.hermes.common.service;
 
 import com.hysens.hermes.common.model.Client;
 import com.hysens.hermes.common.model.SimpleMessage;
-import com.hysens.hermes.common.model.enums.ChatStatusEnum;
+import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.repository.ClientRepository;
 import com.hysens.hermes.common.repository.SimpleMessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +17,14 @@ public class SimpleMessageService {
     SimpleMessageRepository simpleMessageRepository;
     @Autowired
     ClientRepository clientRepository;
+
+    public SimpleMessage findByMessageSpecId(long specId) {
+        return simpleMessageRepository.findByMessageSpecId(specId);
+    }
+
+    public void save(SimpleMessage simpleMessage) {
+        simpleMessageRepository.save(simpleMessage);
+    }
 
     public void saveWithoutClientId (SimpleMessage simpleMessage, long telegramId) {
         Client client;
@@ -41,4 +49,10 @@ public class SimpleMessageService {
         clientRepository.save(client);
     }
 
+    public void setReadStatusInTelegram(long telegramId) {
+        Client client = clientRepository.findByTelegramId(telegramId);
+        List<SimpleMessage> messagesOfClient = simpleMessageRepository.findAllByClientIdAndMessageStatus(client.getId(), MessageStatusEnum.SENT);
+        messagesOfClient.forEach(simpleMessage -> simpleMessage.setMessageStatus(MessageStatusEnum.READ));
+        simpleMessageRepository.saveAll(messagesOfClient);
+    }
 }
