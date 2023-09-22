@@ -13,7 +13,7 @@ public interface SimpleMessageRepository extends JpaRepository<SimpleMessage, Lo
 
     List<SimpleMessage> findAllByClientIdAndMessageStatus(long clientId, MessageStatusEnum statusEnum);
 
-    SimpleMessage findByMessageSpecId(long specId);
+    SimpleMessage findByMessageSpecId(String specId);
 
     SimpleMessage findFirstBySenderPhone(String phone);
 

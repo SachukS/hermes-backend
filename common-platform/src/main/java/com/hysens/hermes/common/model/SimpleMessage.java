@@ -19,7 +19,7 @@ public class SimpleMessage {
     private long clientId;
     private String messenger;
     private String message;
-    private long messageSpecId;
+    private String messageSpecId;
     @Enumerated(EnumType.STRING)
     private MessageStatusEnum messageStatus;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -50,11 +50,11 @@ public class SimpleMessage {
         return receiverPhone;
     }
 
-    public long getMessageSpecId() {
+    public String getMessageSpecId() {
         return messageSpecId;
     }
 
-    public void setMessageSpecId(long messageSpecId) {
+    public void setMessageSpecId(String messageSpecId) {
         this.messageSpecId = messageSpecId;
     }
 

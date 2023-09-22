@@ -31,17 +31,16 @@ public class WhatsAppLogin {
         String homePath = System.getProperty("user.home");
         Path web4jDirectory = Paths.get(homePath + "\\.whatsappweb4j");
         Whatsapp api;
-        Whatsapp.Options options = Whatsapp.Options.builder()
-                .qrHandler(onQRCode())
-                .build();
 
         if (Files.exists(web4jDirectory)) {
-            api = Whatsapp.lastConnection(options);
+            api = Whatsapp.webBuilder()
+                    .lastConnection()
+                    .registered().get();
         } else {
-            api = Whatsapp.newConnection(options);
+            api = Whatsapp.webBuilder()
+                    .lastConnection()
+                    .unregistered(onQRCode());
         }
-        //Whatsapp api = Whatsapp.newConnection();
-        //Whatsapp api = Whatsapp.lastConnection();
         api.addListener(new WhatsAppListener(simpleMessageService));
         new MessageSender(api);
 

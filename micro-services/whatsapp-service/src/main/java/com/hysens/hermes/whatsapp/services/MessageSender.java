@@ -6,6 +6,7 @@ import com.hysens.hermes.whatsapp.exceptions.NotInMemoryException;
 import it.auties.whatsapp.api.Whatsapp;
 import it.auties.whatsapp.model.chat.Chat;
 import it.auties.whatsapp.model.contact.ContactJid;
+import it.auties.whatsapp.model.info.MessageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,8 @@ public class MessageSender {
     public static SimpleMessage sendMessage(SimpleMessage simpleMessage) {
         String contactJID = simpleMessage.getReceiverPhone() + "@s.whatsapp.net";
         Chat chat = Chat.ofJid(ContactJid.of(contactJID));
-        api.sendMessage(chat, simpleMessage.getMessage());
+        MessageInfo messageInfo = api.sendMessage(chat, simpleMessage.getMessage()).join();
+        simpleMessage.setMessageSpecId(messageInfo.key().id());
         simpleMessage.setMessenger("Whatsapp");
         LOG.info("Message: " + simpleMessage.getMessage() + " to " + simpleMessage.getReceiverPhone() + " SENDED using WhatsApp");
         return simpleMessage;

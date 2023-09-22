@@ -77,13 +77,13 @@ public class Telegram {
 
     }
     private static void onUpdateMessageSendFailed(TdApi.UpdateMessageSendFailed update) {
-        SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(update.oldMessageId);
+        SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(String.valueOf(update.oldMessageId));
         simpleMessage.setMessageStatus(MessageStatusEnum.FAILED);
         simpleMessageService.save(simpleMessage);
     }
     private static void onUpdateMessageSendSucceeded(TdApi.UpdateMessageSendSucceeded update) {
-        SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(update.oldMessageId);
-        simpleMessage.setMessageSpecId(update.message.id);
+        SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(String.valueOf(update.oldMessageId));
+        simpleMessage.setMessageSpecId(String.valueOf(update.message.id));
         simpleMessage.setMessageStatus(MessageStatusEnum.SENT);
         simpleMessageService.save(simpleMessage);
     }
@@ -200,7 +200,7 @@ public class Telegram {
         TdApi.InputMessageContent content = new TdApi.InputMessageText(new TdApi.FormattedText(simpleMessage.getMessage(), null), false, true);
         client.send(new TdApi.SendMessage(id, 0, 0, null, null, content), result -> {
             TdApi.Message sendedMessage = result.get();
-            simpleMessage.setMessageSpecId(sendedMessage.id);
+            simpleMessage.setMessageSpecId(String.valueOf(sendedMessage.id));
             simpleMessage.setMessenger("Telegram");
             simpleMessageService.save(simpleMessage);
             LOG.info("Message: " + simpleMessage.getMessage() + " to " + title + " SENDED using Telegram" + sendedMessage.id);
@@ -213,7 +213,7 @@ public class Telegram {
             TdApi.Message sendedMessage = result.get();
             info.setMessageSended(true);
             communicateMethod.setResult(info);
-            simpleMessage.setMessageSpecId(sendedMessage.id);
+            simpleMessage.setMessageSpecId(String.valueOf(sendedMessage.id));
             simpleMessage.setMessenger("Telegram");
             simpleMessageService.save(simpleMessage);
             LOG.info("Message: " + simpleMessage.getMessage() + " to " + title + " SENDED using Telegram"+ sendedMessage.id);

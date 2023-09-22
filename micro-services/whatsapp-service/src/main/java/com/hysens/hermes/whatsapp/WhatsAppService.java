@@ -15,14 +15,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.SynchronousQueue;
 
+import static com.hysens.hermes.whatsapp.listener.WhatsAppListener.simpleMessageService;
+
 @Service
 public class WhatsAppService implements MessageService {
     public static final Logger LOG = LoggerFactory.getLogger(WhatsAppService.class);
     public static SynchronousQueue<CommunicateMethod> communicateMethods;
     public static boolean isLogined = false;
-
-    @Autowired
-    public SimpleMessageService simpleMessageService;
 
     @Override
     public boolean sendMessage(String phoneNumber, SimpleMessage simpleMessage) {
@@ -58,7 +57,6 @@ public class WhatsAppService implements MessageService {
         if (MessageSender.isChatExists(simpleMessage.getReceiverPhone())) {
             info.setUserExist(true);
             info.setChatWithUserExist(true);
-            LOG.info("Message: " + simpleMessage.getMessage() + " to " + simpleMessage.getReceiverPhone() + " SENDED using WhatsApp");
             sendMessage(simpleMessage.getReceiverPhone(), simpleMessage);
             info.setMessageSended(true);
         } else {

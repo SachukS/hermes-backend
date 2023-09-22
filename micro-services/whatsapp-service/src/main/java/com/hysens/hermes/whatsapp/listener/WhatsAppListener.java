@@ -14,8 +14,11 @@ import com.hysens.hermes.whatsapp.utils.CommunicateMethod;
 import it.auties.whatsapp.api.DisconnectReason;
 import it.auties.whatsapp.listener.Listener;
 import it.auties.whatsapp.model.action.Action;
+import it.auties.whatsapp.model.chat.Chat;
+import it.auties.whatsapp.model.contact.Contact;
 import it.auties.whatsapp.model.info.MessageIndexInfo;
 import it.auties.whatsapp.model.info.MessageInfo;
+import it.auties.whatsapp.model.message.model.MessageStatus;
 import it.auties.whatsapp.model.message.standard.TextMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +29,7 @@ import static com.hysens.hermes.whatsapp.auth.WhatsAppLogin.QRCodeFrame;
 
 public class WhatsAppListener implements Listener {
 
-    private SimpleMessageService simpleMessageService;
+    public static SimpleMessageService simpleMessageService;
     public static final Logger LOG = LoggerFactory.getLogger(WhatsAppListener.class);
 
     public WhatsAppListener(SimpleMessageService simpleMessageService) {
@@ -78,6 +81,16 @@ public class WhatsAppListener implements Listener {
         LOG.warn("Whatsapp disconnected.");
         WhatsAppService.isLogined = false;
         Listener.super.onDisconnected(reason);
+    }
+
+    @Override
+    public void onAnyMessageStatus(Chat chat, Contact contact, MessageInfo info, MessageStatus status) {
+        if (status.toString().equals("DELIVERED")) {
+            SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(info.key().id());
+            simpleMessage.setMessageStatus(MessageStatusEnum.SENT);
+            simpleMessageService.save(simpleMessage);
+        }
+        Listener.super.onAnyMessageStatus(chat, contact, info, status);
     }
 
     @Override

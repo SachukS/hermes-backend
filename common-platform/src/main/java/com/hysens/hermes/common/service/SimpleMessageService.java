@@ -18,7 +18,7 @@ public class SimpleMessageService {
     @Autowired
     ClientRepository clientRepository;
 
-    public SimpleMessage findByMessageSpecId(long specId) {
+    public SimpleMessage findByMessageSpecId(String specId) {
         return simpleMessageRepository.findByMessageSpecId(specId);
     }
 
