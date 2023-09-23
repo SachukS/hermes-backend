@@ -1,5 +1,6 @@
 package com.hysens.hermes.service.message;
 
+import com.hysens.hermes.common.model.enums.MessengerEnum;
 import com.hysens.hermes.common.service.MessageService;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.exception.MessageServiceNotFoundForMessengerException;
@@ -16,7 +17,7 @@ public class MessageServiceFactory {
     @Autowired
     public SimpleMessageService simpleMessageService;
     @NonNull
-    public MessageService from(@NonNull Messenger messenger) {
+    public MessageService from(@NonNull MessengerEnum messenger) {
         switch (messenger) {
             case TELEGRAM:
                 return new TelegramService();

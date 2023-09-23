@@ -1,12 +1,16 @@
 package com.hysens.hermes.common.model;
 
+import com.hysens.hermes.common.model.enums.MessengerEnum;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "partner")
@@ -23,6 +27,9 @@ public class Partner {
     private int executionTime;
     private int responseTime;
     private int responseNotification;
+    @ElementCollection(targetClass = MessengerEnum.class)
+    @Enumerated(EnumType.STRING)
+    private List<MessengerEnum> messengerPriority = Arrays.asList(MessengerEnum.TELEGRAM, MessengerEnum.WHATSAPP);
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @CreationTimestamp
     private LocalDateTime createdDateTime;
@@ -46,6 +53,14 @@ public class Partner {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<MessengerEnum> getMessengerPriority() {
+        return messengerPriority;
+    }
+
+    public void setMessengerPriority(List<MessengerEnum> messengerPriority) {
+        this.messengerPriority = messengerPriority;
     }
 
     public String getCountry() {

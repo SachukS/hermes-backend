@@ -1,5 +1,7 @@
 package com.hysens.hermes.common.payload.response;
 
+import com.hysens.hermes.common.model.enums.MessengerEnum;
+
 import java.util.List;
 
 public class JwtResponse {
@@ -10,14 +12,16 @@ public class JwtResponse {
 	private String email;
 	private Long partnerId;
 	private List<String> roles;
+	private List<MessengerEnum> messengerPriority;
 
-	public JwtResponse(String accessToken, Long id, String username, String email, List<String> roles, Long partnerId) {
+	public JwtResponse(String accessToken, Long id, String username, String email, List<String> roles, Long partnerId, List<MessengerEnum> messengerPriority) {
 		this.token = accessToken;
 		this.id = id;
 		this.username = username;
 		this.email = email;
 		this.roles = roles;
 		this.partnerId = partnerId;
+		this.messengerPriority = messengerPriority;
 	}
 
 	public Long getPartnerId() {
@@ -70,5 +74,13 @@ public class JwtResponse {
 
 	public List<String> getRoles() {
 		return roles;
+	}
+
+	public List<MessengerEnum> getMessengerPriority() {
+		return messengerPriority;
+	}
+
+	public void setMessengerPriority(List<MessengerEnum> messengerPriority) {
+		this.messengerPriority = messengerPriority;
 	}
 }

@@ -19,13 +19,13 @@ public class PartnerController {
     @PostMapping(value = "/add")
     public void addPartner(@RequestBody Partner partner) {
         Partner existPartner;
-        Optional<Partner> partnerFromDb = partnerRepository.findById(Long.parseLong("1"));
+        Optional<Partner> partnerFromDb = partnerRepository.findById(partner.getId());
         if (partnerFromDb.isPresent())
             existPartner = partnerFromDb.get();
         else {
             existPartner = new Partner();
-            existPartner.setId(1);
         }
+        existPartner.setMessengerPriority(partner.getMessengerPriority());
         existPartner.setModifyDateTime(LocalDateTime.now());
         existPartner.setEmail(partner.getEmail());
         existPartner.setExecutionTime(partner.getExecutionTime());

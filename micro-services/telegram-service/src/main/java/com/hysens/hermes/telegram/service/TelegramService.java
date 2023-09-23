@@ -44,27 +44,21 @@ public class TelegramService implements MessageService {
     }
 
     @Override
-    public MessageRecipientInfo sendIfChatWithUserExists(SimpleMessage simpleMessage) {
-        Telegram.findUser("+" + simpleMessage.getReceiverPhone());
-        MessageRecipientInfo info = new MessageRecipientInfo();
+    public boolean sendIfChatWithUserExists(SimpleMessage simpleMessage) {
+        Telegram.findUser(simpleMessage);
+        long userId = 0L;
         communicateMethods = new SynchronousQueue<CommunicateMethod>();
         CommunicateMethod isUserExist = new CommunicateMethod();
         try {
             communicateMethods.put(isUserExist);
-            info = (MessageRecipientInfo) isUserExist.getResult();
+            userId = (long) isUserExist.getResult();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        if (info.isUserExist()) {
-            Telegram.isChatExist(String.valueOf(info.getUserId()), simpleMessage, info);
-            CommunicateMethod isChatExistAndSended = new CommunicateMethod();
-            try {
-                communicateMethods.put(isChatExistAndSended);
-                info = (MessageRecipientInfo) isChatExistAndSended.getResult();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+        if (userId != 0L) {
+            sendMessage(String.valueOf(userId), simpleMessage);
+            return true;
         }
-        return info;
+        return false;
     }
 }

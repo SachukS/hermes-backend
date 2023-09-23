@@ -8,6 +8,7 @@ import com.hysens.hermes.common.payload.request.LoginRequest;
 import com.hysens.hermes.common.payload.request.SignupRequest;
 import com.hysens.hermes.common.payload.response.JwtResponse;
 import com.hysens.hermes.common.payload.response.MessageResponse;
+import com.hysens.hermes.common.repository.PartnerRepository;
 import com.hysens.hermes.common.repository.PartnerUserRepository;
 import com.hysens.hermes.common.repository.RoleRepository;
 import com.hysens.hermes.common.service.UserDetailsImpl;
@@ -36,6 +37,9 @@ public class AuthController {
     AuthenticationManager authenticationManager;
 
     @Autowired
+    PartnerRepository partnerRepository;
+
+    @Autowired
     PartnerUserRepository partnerUserRepository;
 
     @Autowired
@@ -62,13 +66,15 @@ public class AuthController {
                 .collect(Collectors.toList());
 
         PartnerUser partnerUser = partnerUserRepository.findByUsername(loginRequest.getUsername()).get();
+        Partner partner = partnerRepository.findById(partnerUser.getPartner().getId()).orElse(new Partner());
 
         return ResponseEntity.ok(new JwtResponse(jwt,
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
                 roles,
-                partnerUser.getPartner().getId()));
+                partnerUser.getPartner().getId(),
+                partner.getMessengerPriority()));
     }
 
     @PostMapping("/register")

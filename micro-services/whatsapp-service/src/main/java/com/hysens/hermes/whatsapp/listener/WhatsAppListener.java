@@ -8,6 +8,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
+import com.hysens.hermes.common.model.enums.MessengerEnum;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.whatsapp.WhatsAppService;
 import com.hysens.hermes.whatsapp.utils.CommunicateMethod;
@@ -53,7 +54,7 @@ public class WhatsAppListener implements Listener {
             simpleMessage.setMessage(textMessage.text());
             simpleMessage.setSenderPhone(info.senderJid().toPhoneNumber().substring(1));
             simpleMessage.setFromMe(false);
-            simpleMessage.setMessenger("Whatsapp");
+            simpleMessage.setMessenger(MessengerEnum.WHATSAPP);
             simpleMessage.setMessageStatus(MessageStatusEnum.NEW);
             simpleMessageService.saveWithoutClientId(simpleMessage, 0L);
         }

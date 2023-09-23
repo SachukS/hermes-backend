@@ -8,10 +8,10 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.hysens.hermes.common.model.Client;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
+import com.hysens.hermes.common.model.enums.MessengerEnum;
 import com.hysens.hermes.common.repository.ClientRepository;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.service.message.MessageServiceFactory;
-import com.hysens.hermes.service.message.Messenger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,9 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,27 +37,27 @@ public class MessengerController {
 
     @PostMapping("/whatsapp/login")
     public void loginWhatsapp() {
-        new MessageServiceFactory().from(Messenger.WHATSAPP).loginInMessenger(simpleMessageService);
+        new MessageServiceFactory().from(MessengerEnum.WHATSAPP).loginInMessenger(simpleMessageService);
     }
 
     @PostMapping("/telegram/login")
     public void loginTelegram() {
-        new MessageServiceFactory().from(Messenger.TELEGRAM).loginInMessenger(simpleMessageService);
+        new MessageServiceFactory().from(MessengerEnum.TELEGRAM).loginInMessenger(simpleMessageService);
     }
 
     @GetMapping("/telegram/logout")
     public String tgLogout() {
-        return new MessageServiceFactory().from(Messenger.TELEGRAM).logout();
+        return new MessageServiceFactory().from(MessengerEnum.TELEGRAM).logout();
     }
 
     @GetMapping("/whatsapp/logout")
     public String waLogout() {
-        return new MessageServiceFactory().from(Messenger.WHATSAPP).logout();
+        return new MessageServiceFactory().from(MessengerEnum.WHATSAPP).logout();
     }
 
     @GetMapping("/whatsapp/login/qr")
     public ResponseEntity<String> getWaQr() {
-        String response = new MessageServiceFactory().from(Messenger.WHATSAPP).getQR();
+        String response = new MessageServiceFactory().from(MessengerEnum.WHATSAPP).getQR();
         if (response.equals("Logged in WhatsApp"))
             return ResponseEntity.ok(response);
         return getQrResponse(response);
@@ -67,7 +65,7 @@ public class MessengerController {
 
     @GetMapping("/telegram/login/qr")
     public ResponseEntity<String> getTgQr() {
-        String response = new MessageServiceFactory().from(Messenger.TELEGRAM).getQR();
+        String response = new MessageServiceFactory().from(MessengerEnum.TELEGRAM).getQR();
         if (response.contains("tg")) {
             return getQrResponse(response);
         }
@@ -76,12 +74,12 @@ public class MessengerController {
 
     @GetMapping("/telegram/islogined")
     public boolean isTelegramLogined() {
-        return new MessageServiceFactory().from(Messenger.TELEGRAM).isMessengerLogined();
+        return new MessageServiceFactory().from(MessengerEnum.TELEGRAM).isMessengerLogined();
     }
 
     @GetMapping("/whatsapp/islogined")
     public boolean isWhatsappLogined() {
-        return new MessageServiceFactory().from(Messenger.WHATSAPP).isMessengerLogined();
+        return new MessageServiceFactory().from(MessengerEnum.WHATSAPP).isMessengerLogined();
     }
 
     @PostMapping("/contacts")

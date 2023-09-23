@@ -2,7 +2,6 @@ package com.hysens.hermes.whatsapp;
 
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
-import com.hysens.hermes.common.repository.SimpleMessageRepository;
 import com.hysens.hermes.common.service.MessageService;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.whatsapp.auth.WhatsAppLogin;
@@ -10,7 +9,6 @@ import com.hysens.hermes.whatsapp.services.MessageSender;
 import com.hysens.hermes.whatsapp.utils.CommunicateMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.SynchronousQueue;
@@ -52,20 +50,17 @@ public class WhatsAppService implements MessageService {
         return "Logged in WhatsApp";
     }
     @Override
-    public MessageRecipientInfo sendIfChatWithUserExists(SimpleMessage simpleMessage) {
+    public boolean sendIfChatWithUserExists(SimpleMessage simpleMessage) {
         MessageRecipientInfo info = new MessageRecipientInfo();
         if (MessageSender.isChatExists(simpleMessage.getReceiverPhone())) {
-            info.setUserExist(true);
-            info.setChatWithUserExist(true);
             sendMessage(simpleMessage.getReceiverPhone(), simpleMessage);
-            info.setMessageSended(true);
+            return true;
         } else {
             if (MessageSender.checkIfUserExist(simpleMessage.getReceiverPhone())) {
-                info.setUserExist(true);
-                info.setChatWithUserExist(true);
-                info.setMessageSended(false);
+                sendMessage(simpleMessage.getReceiverPhone(), simpleMessage);
+                return true;
             }
         }
-        return info;
+        return false;
     }
 }

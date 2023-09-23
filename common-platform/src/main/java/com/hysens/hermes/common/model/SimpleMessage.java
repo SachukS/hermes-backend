@@ -1,6 +1,7 @@
 package com.hysens.hermes.common.model;
 
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
+import com.hysens.hermes.common.model.enums.MessengerEnum;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -17,7 +18,8 @@ public class SimpleMessage {
     private String receiverPhone;
     private String senderPhone;
     private long clientId;
-    private String messenger;
+    @Enumerated(EnumType.STRING)
+    private MessengerEnum messenger;
     private String message;
     private String messageSpecId;
     @Enumerated(EnumType.STRING)
@@ -33,7 +35,7 @@ public class SimpleMessage {
         this.id = id;
     }
 
-    public SimpleMessage(String messenger, String message) {
+    public SimpleMessage(MessengerEnum messenger, String message) {
         this.messenger = messenger;
         this.message = message;
     }
@@ -94,11 +96,11 @@ public class SimpleMessage {
         this.fromMe = fromMe;
     }
 
-    public String getMessenger() {
+    public MessengerEnum getMessenger() {
         return messenger;
     }
 
-    public void setMessenger(String messenger) {
+    public void setMessenger(MessengerEnum messenger) {
         this.messenger = messenger;
     }
 

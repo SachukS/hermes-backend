@@ -43,4 +43,14 @@ public class MessageRecipientInfo {
     public void setMessageSended(boolean messageSended) {
         isMessageSended = messageSended;
     }
+
+    @Override
+    public String toString() {
+        return "MessageRecipientInfo{" +
+                "isUserExist=" + isUserExist +
+                ", isChatWithUserExist=" + isChatWithUserExist +
+                ", isMessageSended=" + isMessageSended +
+                ", userId='" + userId + '\'' +
+                '}';
+    }
 }

@@ -1,6 +1,7 @@
 package com.hysens.hermes.whatsapp.services;
 
 import com.hysens.hermes.common.model.SimpleMessage;
+import com.hysens.hermes.common.model.enums.MessengerEnum;
 import com.hysens.hermes.whatsapp.WhatsAppService;
 import com.hysens.hermes.whatsapp.exceptions.NotInMemoryException;
 import it.auties.whatsapp.api.Whatsapp;
@@ -24,7 +25,7 @@ public class MessageSender {
         Chat chat = Chat.ofJid(ContactJid.of(contactJID));
         MessageInfo messageInfo = api.sendMessage(chat, simpleMessage.getMessage()).join();
         simpleMessage.setMessageSpecId(messageInfo.key().id());
-        simpleMessage.setMessenger("Whatsapp");
+        simpleMessage.setMessenger(MessengerEnum.WHATSAPP);
         LOG.info("Message: " + simpleMessage.getMessage() + " to " + simpleMessage.getReceiverPhone() + " SENDED using WhatsApp");
         return simpleMessage;
     }

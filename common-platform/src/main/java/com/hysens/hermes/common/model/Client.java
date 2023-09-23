@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,8 +34,9 @@ public class Client {
     @CreationTimestamp
     private LocalDateTime createdDateTime;
     private String country;
-    @Convert(converter = StringListConverter.class)
-    private List<String> messengers;
+    @ElementCollection(targetClass = MessengerEnum.class)
+    @Enumerated(EnumType.STRING)
+    private List<MessengerEnum> messengers = new ArrayList<>();
     @Convert(converter = StringListConverter.class)
     private List<String> tags;
     private String notes;
@@ -180,11 +182,11 @@ public class Client {
         this.country = country;
     }
 
-    public List<String> getMessengers() {
+    public List<MessengerEnum> getMessengers() {
         return messengers;
     }
 
-    public void setMessengers(List<String> messengers) {
+    public void setMessengers(List<MessengerEnum> messengers) {
         this.messengers = messengers;
     }
 

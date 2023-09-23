@@ -14,5 +14,5 @@ public interface MessageService {
 
     String logout();
 
-    MessageRecipientInfo sendIfChatWithUserExists(SimpleMessage simpleMessage);
+    boolean sendIfChatWithUserExists(SimpleMessage simpleMessage);
 }
