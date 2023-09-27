@@ -42,7 +42,7 @@ public class MessageController {
             System.out.println(messenger);
             isMessageSended = new MessageServiceFactory().from(messenger).sendIfChatWithUserExists(message);
             if (isMessageSended) {
-                return;
+                break;
             }
         }
 
