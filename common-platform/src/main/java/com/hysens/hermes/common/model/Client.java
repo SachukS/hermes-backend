@@ -34,7 +34,7 @@ public class Client {
     @CreationTimestamp
     private LocalDateTime createdDateTime;
     private String country;
-    @ElementCollection(targetClass = MessengerEnum.class)
+    @ElementCollection(targetClass = MessengerEnum.class, fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private List<MessengerEnum> messengers = new ArrayList<>();
     @Convert(converter = StringListConverter.class)

@@ -67,6 +67,7 @@ public class WhatsAppListener implements Listener {
             QRCodeFrame.dispose();
         LOG.info("Logged in WhatsApp");
         WhatsAppService.isLogined = true;
+        WhatsAppService.sendLoginStatus(true);
         Listener.super.onLoggedIn();
 //        CommunicateMethod authState = null;
 //        try {
@@ -81,6 +82,7 @@ public class WhatsAppListener implements Listener {
     public void onDisconnected(DisconnectReason reason) {
         LOG.warn("Whatsapp disconnected.");
         WhatsAppService.isLogined = false;
+        WhatsAppService.sendLoginStatus(false);
         Listener.super.onDisconnected(reason);
     }
 

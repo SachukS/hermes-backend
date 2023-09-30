@@ -1,16 +1,18 @@
 package com.hysens.hermes.controller;
 
+import com.hysens.hermes.common.exception.HermesException;
 import com.hysens.hermes.common.model.Client;
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.model.enums.MessengerEnum;
 import com.hysens.hermes.common.repository.ClientRepository;
 import com.hysens.hermes.common.repository.SimpleMessageRepository;
-import com.hysens.hermes.service.message.MessageRequest;
+import com.hysens.hermes.common.payload.request.MessageRequest;
 import com.hysens.hermes.service.message.MessageServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +26,8 @@ public class MessageController {
     public SimpleMessageRepository simpleMessageRepository;
     @Autowired
     public ClientRepository clientRepository;
+    @Autowired
+    public SimpMessagingTemplate messagingTemplate;
 
 //    @Async("taskExecutor")
     @PostMapping("/send")
@@ -34,15 +38,21 @@ public class MessageController {
         message.setFromMe(true);
         message.setMessageStatus(MessageStatusEnum.PROCESSING);
         message = simpleMessageRepository.save(message);
+        messagingTemplate.convertAndSend("/message/processing", message);
+
         LOG.info("---------------------------------------NEW REQUEST-------------------------------------------");
 
         LOG.info("Trying to send message to number: " + message.getReceiverPhone() + " using Telegram if chat with user exists");
         boolean isMessageSended = false;
         for (MessengerEnum messenger : messengerPriority) {
             System.out.println(messenger);
-            isMessageSended = new MessageServiceFactory().from(messenger).sendIfChatWithUserExists(message);
-            if (isMessageSended) {
-                break;
+            try {
+                isMessageSended = new MessageServiceFactory().from(messenger).sendIfChatWithUserExists(message);
+                if (isMessageSended) {
+                    break;
+                }
+            } catch (HermesException e) {
+                LOG.error(e.getMessage());
             }
         }
 
@@ -50,7 +60,8 @@ public class MessageController {
 
         if (!isMessageSended) {
             message.setMessageStatus(MessageStatusEnum.FAILED);
-            LOG.error("The user with number: " + message.getReceiverPhone() + " don't have accounts in telegram and whatsapp");
+            messagingTemplate.convertAndSend("/message", message);
+            LOG.error("Messege: " + message.getReceiverPhone() + " don't sended through in telegram and whatsapp");
         }
         client.setLastMessage(message);
         clientRepository.save(client);

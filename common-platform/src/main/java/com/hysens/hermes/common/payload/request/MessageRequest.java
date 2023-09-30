@@ -1,4 +1,4 @@
-package com.hysens.hermes.service.message;
+package com.hysens.hermes.common.payload.request;
 
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.model.enums.MessengerEnum;

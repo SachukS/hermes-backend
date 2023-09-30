@@ -59,6 +59,7 @@ public class MessageSender {
         api.logout();
         //api.disconnect();
         WhatsAppService.isLogined = false;
+        WhatsAppService.sendLoginStatus(false);
         return "Whatsapp logged out";
     }
 }
