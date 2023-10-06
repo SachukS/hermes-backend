@@ -14,6 +14,7 @@ import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.service.message.MessageServiceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
@@ -99,7 +100,8 @@ public class MessengerController {
     @GetMapping("/contacts/load")
     public Page<Client> getContacts(
             @RequestParam(required = false) String chatStatus,
-            @PageableDefault Pageable pageable,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "0") int size,
             @RequestParam(required = false) String phone,
             @RequestParam(required = false) String lastMessage,
             @RequestParam(required = false) String clientName
@@ -107,6 +109,13 @@ public class MessengerController {
         MessageStatusEnum messageStatusEnum = null;
         if (chatStatus != null && !chatStatus.equals("all")) {
             messageStatusEnum = MessageStatusEnum.valueOf(chatStatus.toUpperCase());
+        }
+
+        Pageable pageable;
+        if (size == 0) {
+         pageable = Pageable.unpaged();
+        } else {
+            pageable = PageRequest.of(page, size);
         }
         return clientRepository.findAllByCriteria(messageStatusEnum, phone, lastMessage, clientName, pageable);
     }
