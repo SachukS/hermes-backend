@@ -93,6 +93,11 @@ public class WhatsAppListener implements Listener {
             simpleMessage.setMessageStatus(MessageStatusEnum.SENT);
             simpleMessageService.save(simpleMessage);
         }
+        if (status.toString().equals("READ")) {
+            SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(info.key().id());
+            simpleMessage.setMessageStatus(MessageStatusEnum.READ);
+            simpleMessageService.save(simpleMessage);
+        }
         Listener.super.onAnyMessageStatus(chat, contact, info, status);
     }
 
