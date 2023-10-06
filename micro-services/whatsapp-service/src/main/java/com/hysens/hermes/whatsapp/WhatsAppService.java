@@ -5,10 +5,13 @@ import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 import com.hysens.hermes.common.service.MessageService;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.whatsapp.auth.WhatsAppLogin;
+import com.hysens.hermes.whatsapp.exceptions.WhatsappNotConnectedException;
 import com.hysens.hermes.whatsapp.services.MessageSender;
 import com.hysens.hermes.whatsapp.utils.CommunicateMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.SynchronousQueue;
@@ -20,6 +23,18 @@ public class WhatsAppService implements MessageService {
     public static final Logger LOG = LoggerFactory.getLogger(WhatsAppService.class);
     public static SynchronousQueue<CommunicateMethod> communicateMethods;
     public static boolean isLogined = false;
+
+    public static SimpMessagingTemplate messagingTemplate;
+
+    @Override
+    public void initWs(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+        messagingTemplate.convertAndSend("/messenger/whatsapp/isLoginned", isLogined);
+    }
+
+    public static void sendLoginStatus(boolean loginStatus) {
+        messagingTemplate.convertAndSend("/messenger/whatsapp/isLoginned", loginStatus);
+    }
 
     @Override
     public boolean sendMessage(String phoneNumber, SimpleMessage simpleMessage) {
@@ -51,6 +66,8 @@ public class WhatsAppService implements MessageService {
     }
     @Override
     public boolean sendIfChatWithUserExists(SimpleMessage simpleMessage) {
+        if (!isMessengerLogined())
+            throw new WhatsappNotConnectedException("WHATSAPP_NOT_CONNECTED", "Whatsapp not connected", HttpStatus.INTERNAL_SERVER_ERROR);
         MessageRecipientInfo info = new MessageRecipientInfo();
         if (MessageSender.isChatExists(simpleMessage.getReceiverPhone())) {
             sendMessage(simpleMessage.getReceiverPhone(), simpleMessage);

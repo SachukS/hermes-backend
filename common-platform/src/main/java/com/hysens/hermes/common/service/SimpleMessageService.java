@@ -3,13 +3,12 @@ package com.hysens.hermes.common.service;
 import com.hysens.hermes.common.model.Client;
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
-import com.hysens.hermes.common.model.enums.MessengerEnum;
 import com.hysens.hermes.common.repository.ClientRepository;
 import com.hysens.hermes.common.repository.SimpleMessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,6 +17,8 @@ public class SimpleMessageService {
     SimpleMessageRepository simpleMessageRepository;
     @Autowired
     ClientRepository clientRepository;
+    @Autowired
+    SimpMessagingTemplate messagingTemplate;
 
     public SimpleMessage findByMessageSpecId(String specId) {
         return simpleMessageRepository.findByMessageSpecId(specId);
@@ -25,6 +26,7 @@ public class SimpleMessageService {
 
     public void save(SimpleMessage simpleMessage) {
         simpleMessageRepository.save(simpleMessage);
+        messagingTemplate.convertAndSend("/message", simpleMessage);
     }
 
     public void saveWithoutClientId (SimpleMessage simpleMessage, long telegramId) {
@@ -41,7 +43,9 @@ public class SimpleMessageService {
 //            exist.add(simpleMessage.getMessenger());
 //            client.setMessengers(exist);
 //        }
-        clientRepository.save(client);
+        client = clientRepository.save(client);
+        messagingTemplate.convertAndSend("/client", client);
+
     }
 
     public void setTelegramIdByPhone(long telegramId, String phone) {
@@ -52,8 +56,11 @@ public class SimpleMessageService {
 
     public void setReadStatusInTelegram(long telegramId) {
         Client client = clientRepository.findByTelegramId(telegramId);
+        if (client == null)
+            return;
         List<SimpleMessage> messagesOfClient = simpleMessageRepository.findAllByClientIdAndMessageStatus(client.getId(), MessageStatusEnum.SENT);
         messagesOfClient.forEach(simpleMessage -> simpleMessage.setMessageStatus(MessageStatusEnum.READ));
         simpleMessageRepository.saveAll(messagesOfClient);
+        messagingTemplate.convertAndSend("/messages/read", messagesOfClient);
     }
 }
