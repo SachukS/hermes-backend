@@ -20,6 +20,7 @@ public class SimpleMessage {
     private long clientId;
     @Enumerated(EnumType.STRING)
     private MessengerEnum messenger;
+    @Column(length = 4096)
     private String message;
     private String messageSpecId;
     @Enumerated(EnumType.STRING)

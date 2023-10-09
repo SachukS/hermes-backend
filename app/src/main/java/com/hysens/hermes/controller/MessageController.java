@@ -32,39 +32,52 @@ public class MessageController {
 //    @Async("taskExecutor")
     @PostMapping("/send")
     public void postMessage(@RequestBody MessageRequest request) {
-        SimpleMessage message = request.getSimpleMessage();
         List<MessengerEnum> messengerPriority = request.getMessengerPriority();
 
-        message.setFromMe(true);
-        message.setMessageStatus(MessageStatusEnum.PROCESSING);
-        message = simpleMessageRepository.save(message);
-        messagingTemplate.convertAndSend("/message/processing", message);
+        String messageText = request.getSimpleMessage().getMessage();
+        int segmentLength = 4096;
+        int messageLength = messageText.length();
+        System.out.println(messageLength);
+        int numSegments = (int) Math.ceil((double) messageLength / segmentLength);
 
         LOG.info("---------------------------------------NEW REQUEST-------------------------------------------");
+        LOG.info("Trying to send message to number: " + request.getSimpleMessage().getReceiverPhone() + " using Telegram if chat with user exists");
 
-        LOG.info("Trying to send message to number: " + message.getReceiverPhone() + " using Telegram if chat with user exists");
         boolean isMessageSended = false;
-        for (MessengerEnum messenger : messengerPriority) {
-            System.out.println(messenger);
-            try {
-                isMessageSended = new MessageServiceFactory().from(messenger).sendIfChatWithUserExists(message);
-                if (isMessageSended) {
-                    break;
+        for (int i = 0; i < numSegments; i++) {
+            int startIndex = i * segmentLength;
+            int endIndex = Math.min(startIndex + segmentLength, messageLength);
+            String messageSegment = messageText.substring(startIndex, endIndex);
+
+            SimpleMessage messageToSend = new SimpleMessage();
+            messageToSend.setClientId(request.getSimpleMessage().getClientId());
+            messageToSend.setMessage(messageSegment);
+            messageToSend.setReceiverPhone(request.getSimpleMessage().getReceiverPhone());
+            messageToSend.setFromMe(true);
+            messageToSend.setMessageStatus(MessageStatusEnum.PROCESSING);
+            messageToSend = simpleMessageRepository.save(messageToSend);
+            messagingTemplate.convertAndSend("/message/processing", messageToSend);
+
+            for (MessengerEnum messenger : messengerPriority) {
+                try {
+                    isMessageSended = new MessageServiceFactory().from(messenger).sendIfChatWithUserExists(messageToSend);
+                    if (isMessageSended) {
+                        break;
+                    }
+                } catch (HermesException e) {
+                    LOG.error(e.getMessage());
                 }
-            } catch (HermesException e) {
-                LOG.error(e.getMessage());
             }
-        }
+            Client client = clientRepository.findByPhone(messageToSend.getReceiverPhone());
 
-        Client client = clientRepository.findByPhone(message.getReceiverPhone());
-
-        if (!isMessageSended) {
-            message.setMessageStatus(MessageStatusEnum.FAILED);
-            messagingTemplate.convertAndSend("/message", message);
-            LOG.error("Messege: " + message.getReceiverPhone() + " don't sended through in telegram and whatsapp");
+            if (!isMessageSended) {
+                messageToSend.setMessageStatus(MessageStatusEnum.FAILED);
+                messagingTemplate.convertAndSend("/message", messageToSend);
+                LOG.error("Messege: " + messageToSend.getReceiverPhone() + " don't sended through in telegram and whatsapp");
+            }
+            client.setLastMessage(messageToSend);
+            clientRepository.save(client);
         }
-        client.setLastMessage(message);
-        clientRepository.save(client);
     }
     @GetMapping("/load/{id}")
     public List<SimpleMessage> getMessages(@PathVariable("id") long id) {
