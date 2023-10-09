@@ -6,6 +6,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.hysens.hermes.common.exception.HermesException;
 import com.hysens.hermes.common.model.Client;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.model.enums.MessengerEnum;
@@ -85,7 +86,11 @@ public class MessengerController {
 
     @PostMapping("/contacts")
     public void addContacts(@RequestBody List<Client> clients) {
-        clientRepository.saveAll(clients);
+        try {
+            clientRepository.saveAll(clients);
+        } catch (Exception e) {
+            throw new HermesException("DB_EXCEPTION", e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping("/contacts/edit")

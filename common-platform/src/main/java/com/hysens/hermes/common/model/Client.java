@@ -24,6 +24,7 @@ public class Client {
     private boolean isOnline;
     private String name;
     private String surname;
+    @Column(unique = true)
     private String phone;
     private String email;
     private ChatStatusEnum chatStatus = ChatStatusEnum.ACTIVE;
