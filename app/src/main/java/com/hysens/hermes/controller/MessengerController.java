@@ -113,7 +113,7 @@ public class MessengerController {
 
         Pageable pageable;
         if (size == 0) {
-         pageable = Pageable.unpaged();
+            pageable = Pageable.unpaged();
         } else {
             pageable = PageRequest.of(page, size);
         }

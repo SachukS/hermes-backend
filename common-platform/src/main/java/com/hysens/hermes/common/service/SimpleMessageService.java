@@ -13,6 +13,7 @@ import java.util.List;
 
 @Service
 public class SimpleMessageService {
+    public static final Logger LOG = LoggerFactory.getLogger(SimpleMessageService.class);
     @Autowired
     SimpleMessageRepository simpleMessageRepository;
     @Autowired
@@ -35,7 +36,12 @@ public class SimpleMessageService {
             client = clientRepository.findByPhone(simpleMessage.getSenderPhone());
         else
             client = clientRepository.findByTelegramId(telegramId);
-        simpleMessage.setClientId(client.getId());
+        try {
+            simpleMessage.setClientId(client.getId());
+        } catch (Exception e) {
+            LOG.error("Message received from client which isn't in DB");
+            return;
+        }
         client.setLastMessage(simpleMessage);
 //        if (!client.getMessengers().contains(simpleMessage.getMessenger())) {
 //            List<MessengerEnum> exist = new ArrayList<>();
@@ -59,8 +65,10 @@ public class SimpleMessageService {
         if (client == null)
             return;
         List<SimpleMessage> messagesOfClient = simpleMessageRepository.findAllByClientIdAndMessageStatus(client.getId(), MessageStatusEnum.SENT);
-        messagesOfClient.forEach(simpleMessage -> simpleMessage.setMessageStatus(MessageStatusEnum.READ));
-        simpleMessageRepository.saveAll(messagesOfClient);
-        messagingTemplate.convertAndSend("/messages/read", messagesOfClient);
+        if (!messagesOfClient.isEmpty()) {
+            messagesOfClient.forEach(simpleMessage -> simpleMessage.setMessageStatus(MessageStatusEnum.READ));
+            simpleMessageRepository.saveAll(messagesOfClient);
+            messagingTemplate.convertAndSend("/messages/read", messagesOfClient);
+        }
     }
 }
