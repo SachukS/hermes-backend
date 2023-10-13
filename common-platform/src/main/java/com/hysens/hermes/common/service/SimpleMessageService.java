@@ -45,12 +45,7 @@ public class SimpleMessageService {
             return;
         }
         client.setLastMessage(simpleMessage);
-//        if (!client.getMessengers().contains(simpleMessage.getMessenger())) {
-//            List<MessengerEnum> exist = new ArrayList<>();
-//            exist.addAll(client.getMessengers());
-//            exist.add(simpleMessage.getMessenger());
-//            client.setMessengers(exist);
-//        }
+        client.addConfirmedMessenger(simpleMessage.getMessenger());
         client = clientRepository.save(client);
         messagingTemplate.convertAndSend("/client", client);
 

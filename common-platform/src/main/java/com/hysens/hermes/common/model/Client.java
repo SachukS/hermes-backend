@@ -63,6 +63,15 @@ public class Client {
     public Client() {
     }
 
+    public void addConfirmedMessenger(MessengerEnum messenger) {
+        if (!this.getMessengers().contains(messenger)) {
+            List<MessengerEnum> exist = new ArrayList<>();
+            exist.addAll(this.getMessengers());
+            exist.add(messenger);
+            this.setMessengers(exist);
+        }
+    }
+
     public long getId() {
         return id;
     }

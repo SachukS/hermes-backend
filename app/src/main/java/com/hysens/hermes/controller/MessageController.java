@@ -37,13 +37,14 @@ public class MessageController {
         String messageText = request.getSimpleMessage().getMessage();
         int segmentLength = 4096;
         int messageLength = messageText.length();
-        System.out.println(messageLength);
         int numSegments = (int) Math.ceil((double) messageLength / segmentLength);
 
         LOG.info("---------------------------------------NEW REQUEST-------------------------------------------");
         LOG.info("Trying to send message to number: " + request.getSimpleMessage().getReceiverPhone() + " using Telegram if chat with user exists");
 
         boolean isMessageSended = false;
+        Client client = clientRepository.findByPhone(request.getSimpleMessage().getReceiverPhone());
+
         for (int i = 0; i < numSegments; i++) {
             int startIndex = i * segmentLength;
             int endIndex = Math.min(startIndex + segmentLength, messageLength);
@@ -62,13 +63,13 @@ public class MessageController {
                 try {
                     isMessageSended = new MessageServiceFactory().from(messenger).sendIfChatWithUserExists(messageToSend);
                     if (isMessageSended) {
+                        client.addConfirmedMessenger(messenger);
                         break;
                     }
                 } catch (HermesException e) {
                     LOG.error(e.getMessage());
                 }
             }
-            Client client = clientRepository.findByPhone(messageToSend.getReceiverPhone());
 
             if (!isMessageSended) {
                 messageToSend.setMessageStatus(MessageStatusEnum.FAILED);
