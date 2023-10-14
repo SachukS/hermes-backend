@@ -9,14 +9,14 @@ public class CountryEnum {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String name;
-    private String description;
+    private String code;
 
     public CountryEnum() {
     }
 
-    public CountryEnum(String name, String description) {
+    public CountryEnum(String name, String code) {
         this.name = name;
-        this.description = description;
+        this.code = code;
     }
 
     public long getId(){
@@ -35,12 +35,12 @@ public class CountryEnum {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public String getCode() {
+        return code;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setCode(String description) {
+        this.code = description;
     }
 
 }
