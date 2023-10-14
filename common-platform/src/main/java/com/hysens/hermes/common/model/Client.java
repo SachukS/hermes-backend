@@ -1,11 +1,9 @@
 package com.hysens.hermes.common.model;
 
 import com.hysens.hermes.common.model.enums.ChatStatusEnum;
-import com.hysens.hermes.common.model.enums.MessageStatusEnum;
+import com.hysens.hermes.common.model.enums.CountryEnum;
 import com.hysens.hermes.common.model.enums.MessengerEnum;
 import com.hysens.hermes.common.util.StringListConverter;
-import net.bytebuddy.implementation.bind.annotation.Default;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -34,7 +32,9 @@ public class Client {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @CreationTimestamp
     private LocalDateTime createdDateTime;
-    private String country;
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = CountryEnum.class, cascade = CascadeType.ALL)
+    @JoinColumn(name = "country_id")
+    private CountryEnum countryEnum;
     @ElementCollection(targetClass = MessengerEnum.class, fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private List<MessengerEnum> messengers = new ArrayList<>();
@@ -42,13 +42,13 @@ public class Client {
     private List<String> tags;
     private String notes;
 
-    public Client(boolean isOnline, String name, String surname, String phone, String email, String country) {
+    public Client(boolean isOnline, String name, String surname, String phone, String email, CountryEnum countryEnum) {
         this.isOnline = isOnline;
         this.name = name;
         this.surname = surname;
         this.phone = phone;
         this.email = email;
-        this.country = country;
+        this.countryEnum = countryEnum;
     }
 
     public Client(String phone) {
@@ -184,12 +184,12 @@ public class Client {
 //        this.lastMessageDate = lastMessageDate;
 //    }
 
-    public String getCountry() {
-        return country;
+    public CountryEnum getCountry() {
+        return countryEnum;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
+    public void setCountry(CountryEnum countryEnum) {
+        this.countryEnum = countryEnum;
     }
 
     public List<MessengerEnum> getMessengers() {
