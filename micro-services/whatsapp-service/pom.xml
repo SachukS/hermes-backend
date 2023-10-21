@@ -68,6 +68,9 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.compilerArgs>
+            --enable-preview
+        </maven.compiler.compilerArgs>
     </properties>
 
 </project>
