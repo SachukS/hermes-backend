@@ -17,6 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -95,6 +100,21 @@ public class Telegram {
         {
             // Get the message text
             String text;
+            if (messageContent instanceof TdApi.MessagePhoto) {
+                try {
+                    var sex = ((TdApi.MessagePhoto) messageContent).photo.sizes[((TdApi.MessagePhoto) messageContent).photo.sizes.length -1].photo;
+                    var id = sex.id;
+                    var expectedSize = sex.expectedSize;
+
+                    client.send(new TdApi.DownloadFile(id, 32, 0, 0, true), result -> {
+                        TdApi.File file = result.get();
+                        System.out.println(file.local.path);
+                    });
+                } catch (TelegramError e) {
+                    LOG.error("down");
+                }
+
+            }
             if (messageContent instanceof TdApi.MessageText) {
                 // Get the text of the text message
                 text = ((TdApi.MessageText) messageContent).text.text;
