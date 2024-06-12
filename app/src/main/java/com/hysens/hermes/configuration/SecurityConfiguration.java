@@ -60,12 +60,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.cors().and().csrf().disable()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeRequests().antMatchers("/api/v1/user/login", "/api/v1/user/register", "/ws").permitAll()
+                .authorizeRequests().antMatchers("/api/v1/user/login", "/api/v1/user/register", "/ws/**").permitAll()
                 .antMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**")
                 .permitAll()
                 .antMatchers("/swagger-ui")
                 .permitAll()
-                .anyRequest().authenticated();
+                .anyRequest().permitAll();
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }

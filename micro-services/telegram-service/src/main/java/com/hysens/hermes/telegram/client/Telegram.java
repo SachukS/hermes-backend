@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 public class Telegram {
     private static SimpleMessageService simpleMessageService;
@@ -102,43 +103,49 @@ public class Telegram {
             String text;
             if (messageContent instanceof TdApi.MessagePhoto) {
                 try {
-                    var sex = ((TdApi.MessagePhoto) messageContent).photo.sizes[((TdApi.MessagePhoto) messageContent).photo.sizes.length -1].photo;
-                    var id = sex.id;
-                    var expectedSize = sex.expectedSize;
-
-                    client.send(new TdApi.DownloadFile(id, 32, 0, 0, true), result -> {
-                        TdApi.File file = result.get();
-                        System.out.println(file.local.path);
+                    var type = ((TdApi.MessagePhoto) messageContent).caption.text;
+                    System.out.println(type);
+                    var id = ((TdApi.MessagePhoto) messageContent).photo.sizes[((TdApi.MessagePhoto) messageContent).photo.sizes.length -1].photo.id;
+                    client.send(new TdApi.GetUser(update.message.chatId), result -> {
+                        try {
+                            TdApi.User user = result.get();
+                            client.send(new TdApi.DownloadFile(id, 32, 0, 0, true), resultFile -> {
+                                TdApi.File file = resultFile.get();
+                                simpleMessageService.sendImageFromTelegramToOcr(file.local.path, user.id, type.toLowerCase(Locale.ROOT));
+                            });
+                        } catch (TelegramError e) {
+                            LOG.error("down");
+                        }
                     });
                 } catch (TelegramError e) {
                     LOG.error("down");
                 }
 
             }
-            if (messageContent instanceof TdApi.MessageText) {
-                // Get the text of the text message
-                text = ((TdApi.MessageText) messageContent).text.text;
-            } else {
-                // We handle only text messages, the other messages will be printed as their type
-                text = String.format("(%s)", messageContent.getClass().getSimpleName());
-            }
-            client.send(new TdApi.GetUser(update.message.chatId), result -> {
-                try {
-                    TdApi.User user = result.get();
-                    LOG.warn("Received new message from " + user.id + ": " + text);
-
-                    SimpleMessage simpleMessage = new SimpleMessage();
-                    simpleMessage.setMessage(text);
-                    simpleMessage.setSenderPhone(user.phoneNumber);
-                    simpleMessage.setFromMe(false);
-                    simpleMessage.setMessenger(MessengerEnum.TELEGRAM);
-                    simpleMessage.setMessageStatus(MessageStatusEnum.NEW);
-                    simpleMessageService.saveWithoutClientId(simpleMessage, user.id);
-                }
-                catch (TelegramError e) {
-                    LOG.error("Received message from group chat");
-                }
-            });
+//            if (messageContent instanceof TdApi.MessageText) {
+//                // Get the text of the text message
+//                text = ((TdApi.MessageText) messageContent).text.text;
+//            } else {
+//                // We handle only text messages, the other messages will be printed as their type
+//                text = String.format("(%s)", messageContent.getClass().getSimpleName());
+//            }
+//            client.send(new TdApi.GetUser(update.message.chatId), result -> {
+//                try {
+//                    TdApi.User user = result.get();
+//                    LOG.warn("Received new message from " + user.id + ": " + text);
+//
+//                    SimpleMessage simpleMessage = new SimpleMessage();
+//                    simpleMessage.setMessage(text);
+//                    simpleMessage.setSenderPhone(user.phoneNumber);
+//                    simpleMessage.setFromMe(false);
+//                    simpleMessage.setMessenger(MessengerEnum.TELEGRAM);
+//                    simpleMessage.setMessageStatus(MessageStatusEnum.NEW);
+//                    simpleMessageService.saveWithoutClientId(simpleMessage, user.id);
+//                }
+//                catch (TelegramError e) {
+//                    LOG.error("Received message from group chat");
+//                }
+//            });
         }
     }
 

@@ -21,7 +21,7 @@ import java.util.List;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker( "/messenger", "/client", "/message");
+        config.enableSimpleBroker( "/messenger", "/client", "/message", "/ocr");
         config.setApplicationDestinationPrefixes("/api/v1/ws");
         config.setUserDestinationPrefix("/user");
     }
@@ -31,7 +31,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry
                 .addEndpoint("/ws")
                 .setAllowedOriginPatterns("*");
-//                .withSockJS();
+                //.withSockJS();
     }
 
     @Override

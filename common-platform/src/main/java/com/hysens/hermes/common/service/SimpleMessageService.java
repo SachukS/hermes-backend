@@ -2,9 +2,11 @@ package com.hysens.hermes.common.service;
 
 import com.hysens.hermes.common.model.Client;
 import com.hysens.hermes.common.model.SimpleMessage;
+import com.hysens.hermes.common.model.UserPhoto;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.repository.ClientRepository;
 import com.hysens.hermes.common.repository.SimpleMessageRepository;
+import com.hysens.hermes.common.repository.UserPhotoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ public class SimpleMessageService {
     SimpleMessageRepository simpleMessageRepository;
     @Autowired
     ClientRepository clientRepository;
+    @Autowired
+    UserPhotoRepository userPhotoRepository;
     @Autowired
     SimpMessagingTemplate messagingTemplate;
 
@@ -55,6 +59,12 @@ public class SimpleMessageService {
         Client client = clientRepository.findByPhone(phone);
         client.setTelegramId(telegramId);
         clientRepository.save(client);
+    }
+
+    public void sendImageFromTelegramToOcr(String path, long userId, String type) {
+        UserPhoto userPhoto = new UserPhoto(userId, path, type);
+
+        userPhotoRepository.save(userPhoto);
     }
 
     public void setReadStatusInTelegram(long telegramId) {
