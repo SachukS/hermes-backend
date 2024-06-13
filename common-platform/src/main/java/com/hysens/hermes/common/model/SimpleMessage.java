@@ -40,6 +40,10 @@ public class SimpleMessage {
         this.messenger = messenger;
         this.message = message;
     }
+    public SimpleMessage(boolean fromMe, String message) {
+        this.fromMe = fromMe;
+        this.message = message;
+    }
 
     public String getSenderPhone() {
         return senderPhone;

@@ -3,10 +3,8 @@ package com.hysens.hermes.telegram.client;
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.model.enums.MessengerEnum;
-import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.telegram.config.CommunicateMethod;
-import com.hysens.hermes.telegram.exception.TelegramChatWithUserNotFoundException;
 import com.hysens.hermes.telegram.exception.TelegramPhoneNumberNotFoundException;
 import com.hysens.hermes.telegram.service.TelegramService;
 import it.tdlight.client.*;
@@ -17,11 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
-import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
@@ -33,6 +26,7 @@ public class Telegram {
     public static final Logger LOG = LoggerFactory.getLogger(Telegram.class);
 
     public static final JFrame QRCodeFrame = new JFrame();
+    private static SimpleMessage loading = new SimpleMessage(true, "Please wait. We are processing your document.");
 
     private static SpringTelegramClient client;
 
@@ -111,12 +105,14 @@ public class Telegram {
                             TdApi.User user = result.get();
                             client.send(new TdApi.DownloadFile(id, 32, 0, 0, true), resultFile -> {
                                 TdApi.File file = resultFile.get();
-                                simpleMessageService.sendImageFromTelegramToOcr(file.local.path, user.id, type.toLowerCase(Locale.ROOT));
+                                simpleMessageService.saveImageFromTelegramForOcr(file.local.path, user.id, type.toLowerCase(Locale.ROOT));
+                                createChatAndSend(String.valueOf(user.id), loading);
                             });
                         } catch (TelegramError e) {
                             LOG.error("down");
                         }
                     });
+
                 } catch (TelegramError e) {
                     LOG.error("down");
                 }

@@ -61,7 +61,7 @@ public class SimpleMessageService {
         clientRepository.save(client);
     }
 
-    public void sendImageFromTelegramToOcr(String path, long userId, String type) {
+    public void saveImageFromTelegramForOcr(String path, long userId, String type) {
         UserPhoto userPhoto = new UserPhoto(userId, path, type);
 
         userPhotoRepository.save(userPhoto);
