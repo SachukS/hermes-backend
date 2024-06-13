@@ -9,12 +9,7 @@ import it.tdlight.jni.TdApi;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 
-import static com.hysens.hermes.telegram.client.Telegram.QRCodeFrame;
 
 public class SpringClientInteraction implements ClientInteraction {
     private final ExecutorService blockingExecutor;
@@ -95,10 +90,10 @@ public class SpringClientInteraction implements ClientInteraction {
                         String link = ((ParameterInfoNotifyLink) parameterInfo).getLink();
                         System.out.println();
                         //Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-                        if (QRCodeFrame.isEnabled())
-                            QRCodeFrame.dispose();
-
-                        QRCodeFrame.setUndecorated(true);
+//                        if (QRCodeFrame.isEnabled())
+//                            QRCodeFrame.dispose();
+//
+//                        QRCodeFrame.setUndecorated(true);
 
                         qr = link;
 

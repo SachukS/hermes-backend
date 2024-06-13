@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-import static com.hysens.hermes.whatsapp.auth.WhatsAppLogin.QRCodeFrame;
 
 public class WhatsAppListener implements Listener {
 
@@ -63,8 +62,8 @@ public class WhatsAppListener implements Listener {
 
     @Override
     public void onLoggedIn() {
-        if (QRCodeFrame.isEnabled())
-            QRCodeFrame.dispose();
+//        if (QRCodeFrame.isEnabled())
+//            QRCodeFrame.dispose();
         LOG.info("Logged in WhatsApp");
         WhatsAppService.isLogined = true;
         WhatsAppService.sendLoginStatus(true);
