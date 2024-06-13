@@ -25,10 +25,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -72,21 +68,18 @@ public class MessengerController {
     }
 
     @GetMapping("/telegram/login/qr")
-    public ResponseEntity<byte[]> getTgQr() throws IOException {
+    public ResponseEntity<byte[]> getTgQr() throws WriterException, IOException {
         String response = new MessageServiceFactory().from(MessengerEnum.TELEGRAM).getQR();
         if (response.contains("tg")) {
-            // Assuming you have an ImageIcon instance
-            ImageIcon image = new ImageIcon(
-                    QRAuthorize.getQr(response)
-                            .getScaledInstance(256, 256,  Image.SCALE_SMOOTH));
-            BufferedImage bufferedImage = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
-            bufferedImage.getGraphics().drawImage(image.getImage(), 0, 0, null);
+            // Generate QR code
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(response, BarcodeFormat.QR_CODE, 200, 200);
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(bufferedImage, "png", baos);
-            byte[] imageBytes = baos.toByteArray();
+            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+            byte[] pngData = pngOutputStream.toByteArray();
 
-            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes);
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(pngData);
         }
         return ResponseEntity.badRequest().body(null);
     }

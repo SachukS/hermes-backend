@@ -4,8 +4,8 @@ import it.tdlight.client.*;
 import it.tdlight.common.utils.ScannerUtils;
 import it.tdlight.jni.TdApi;
 
-import javax.swing.*;
-import java.awt.*;
+
+
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
@@ -94,7 +94,7 @@ public class SpringClientInteraction implements ClientInteraction {
                     case NOTIFY_LINK:
                         String link = ((ParameterInfoNotifyLink) parameterInfo).getLink();
                         System.out.println();
-                        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                        //Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
                         if (QRCodeFrame.isEnabled())
                             QRCodeFrame.dispose();
 
@@ -102,19 +102,19 @@ public class SpringClientInteraction implements ClientInteraction {
 
                         qr = link;
 
-                        ImageIcon image = new ImageIcon(
-                                QRAuthorize.getQr(link)
-                                        .getScaledInstance(256, 256,  Image.SCALE_SMOOTH));
-
-                        JLabel lbl = new JLabel(image);
-                        QRCodeFrame.getContentPane().add(lbl);
-                        QRCodeFrame.setSize(256, 256);
-
-                        int x = (screenSize.width - QRCodeFrame.getSize().width)/2;
-                        int y = (screenSize.height - QRCodeFrame.getSize().height)/2;
-
-                        QRCodeFrame.setLocation(x, y);
-                        QRCodeFrame.setVisible(true);
+//                        ImageIcon image = new ImageIcon(
+//                                QRAuthorize.getQr(link)
+//                                        .getScaledInstance(256, 256,  Image.SCALE_SMOOTH));
+//
+//                        JLabel lbl = new JLabel(image);
+//                        QRCodeFrame.getContentPane().add(lbl);
+//                        QRCodeFrame.setSize(256, 256);
+//
+//                        int x = (screenSize.width - QRCodeFrame.getSize().width)/2;
+//                        int y = (screenSize.height - QRCodeFrame.getSize().height)/2;
+//
+//                        QRCodeFrame.setLocation(x, y);
+//                        QRCodeFrame.setVisible(true);
                         result.accept("");
                         return;
                     case TERMS_OF_SERVICE:
