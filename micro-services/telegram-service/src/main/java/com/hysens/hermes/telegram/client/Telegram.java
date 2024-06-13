@@ -14,7 +14,6 @@ import it.tdlight.jni.TdApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
@@ -25,7 +24,7 @@ public class Telegram {
 
     public static final Logger LOG = LoggerFactory.getLogger(Telegram.class);
 
-    public static final JFrame QRCodeFrame = new JFrame();
+//    public static final JFrame QRCodeFrame = new JFrame();
     private static SimpleMessage loading = new SimpleMessage(true, "Please wait. We are processing your document.");
 
     private static SpringTelegramClient client;
@@ -217,8 +216,8 @@ public class Telegram {
         TdApi.AuthorizationState authorizationState = update.authorizationState;
 
         if (authorizationState instanceof TdApi.AuthorizationStateReady) {
-            if (QRCodeFrame.isEnabled())
-                QRCodeFrame.dispose();
+//            if (QRCodeFrame.isEnabled())
+//                QRCodeFrame.dispose();
             LOG.info("Logged in Telegram");
             TelegramService.isLogined = true;
             TelegramService.sendLoginStatus(true);
