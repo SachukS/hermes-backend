@@ -13,6 +13,7 @@ import com.hysens.hermes.common.model.enums.MessengerEnum;
 import com.hysens.hermes.common.repository.ClientRepository;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.service.message.MessageServiceFactory;
+import com.hysens.hermes.telegram.client.QRAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,9 +25,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -66,12 +72,23 @@ public class MessengerController {
     }
 
     @GetMapping("/telegram/login/qr")
-    public ResponseEntity<String> getTgQr() {
+    public ResponseEntity<byte[]> getTgQr() throws IOException {
         String response = new MessageServiceFactory().from(MessengerEnum.TELEGRAM).getQR();
         if (response.contains("tg")) {
-            return getQrResponse(response);
+            // Assuming you have an ImageIcon instance
+            ImageIcon image = new ImageIcon(
+                    QRAuthorize.getQr(response)
+                            .getScaledInstance(256, 256,  Image.SCALE_SMOOTH));
+            BufferedImage bufferedImage = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
+            bufferedImage.getGraphics().drawImage(image.getImage(), 0, 0, null);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(bufferedImage, "png", baos);
+            byte[] imageBytes = baos.toByteArray();
+
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes);
         }
-        return ResponseEntity.ok(response);
+        return ResponseEntity.badRequest().body(null);
     }
 
     @GetMapping("/telegram/islogined")
