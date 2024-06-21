@@ -1,7 +1,7 @@
 
 # Hermes Message Agregator
 
-This is backend for Hermes project.
+This is backend for Hermes project. For mop
 
 
 ## Features
