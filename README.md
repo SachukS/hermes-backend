@@ -19,6 +19,8 @@ This is backend for Hermes project.
 - Maven
 
 ## Run Locally
+First of all you need to create database with name `hermes` and provide db credentials to `application.json`
+
 Clone the project
 
 ```bash
