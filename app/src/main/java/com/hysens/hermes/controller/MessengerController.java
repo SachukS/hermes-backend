@@ -58,20 +58,37 @@ public class MessengerController {
     }
 
     @GetMapping("/whatsapp/login/qr")
-    public ResponseEntity<String> getWaQr() {
+    public ResponseEntity<byte[]> getWaQr() throws WriterException, IOException {
         String response = new MessageServiceFactory().from(MessengerEnum.WHATSAPP).getQR();
-        if (response.equals("Logged in WhatsApp"))
-            return ResponseEntity.ok(response);
-        return getQrResponse(response);
+        if (!response.equals("Logged in WhatsApp")) {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(response, BarcodeFormat.QR_CODE, 200, 200);
+
+            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+            byte[] pngData = pngOutputStream.toByteArray();
+
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(pngData);
+        }
+        return ResponseEntity.accepted().body(null);
     }
 
     @GetMapping("/telegram/login/qr")
-    public ResponseEntity<String> getTgQr() {
+    public ResponseEntity<byte[]> getTgQr() throws WriterException, IOException {
         String response = new MessageServiceFactory().from(MessengerEnum.TELEGRAM).getQR();
+        //simpleMessageService.setTelegramIdByPhone(489214541, "380683909142");
         if (response.contains("tg")) {
-            return getQrResponse(response);
+            // Generate QR code
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(response, BarcodeFormat.QR_CODE, 200, 200);
+
+            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+            byte[] pngData = pngOutputStream.toByteArray();
+
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(pngData);
         }
-        return ResponseEntity.ok(response);
+        return ResponseEntity.accepted().body(null);
     }
 
     @GetMapping("/telegram/islogined")
@@ -125,35 +142,4 @@ public class MessengerController {
         return clientRepository.findAllByCriteria(messageStatusEnum, phone, lastMessage, clientName, pageable);
     }
 
-    private ResponseEntity<String> getQrResponse(String response) {
-        byte[] imageData = generateQrCodeImageData(response);
-        String base64ImageData = "data:image/png;base64," + Base64.getEncoder().encodeToString(imageData);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.TEXT_EVENT_STREAM);
-        return new ResponseEntity<>(base64ImageData, headers, HttpStatus.OK);
-    }
-
-    private byte[] generateQrCodeImageData(String url) {
-        Map<EncodeHintType, Object> hints = new HashMap<>();
-        hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
-        hints.put(EncodeHintType.MARGIN, 1);
-
-        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = null;
-        try {
-            bitMatrix = qrCodeWriter.encode(url, BarcodeFormat.QR_CODE, 200, 200, hints);
-        } catch (WriterException e) {
-            e.printStackTrace();
-        }
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try {
-            MatrixToImageWriter.writeToStream(bitMatrix, "png", outputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return outputStream.toByteArray();
-    }
 }

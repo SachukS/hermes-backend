@@ -7,6 +7,7 @@ import com.hysens.hermes.telegram.client.SpringClientInteraction;
 import com.hysens.hermes.telegram.client.Telegram;
 import com.hysens.hermes.telegram.config.CommunicateMethod;
 import com.hysens.hermes.telegram.exception.TelegramNotConnectedException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ public class TelegramService implements MessageService {
     public static SynchronousQueue<CommunicateMethod> communicateMethods;
     public static boolean isLogined = false;
     public static SimpMessagingTemplate messagingTemplate;
+    private static SimpleMessageService simpleMessageService;
     @Override
     public void initWs(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
@@ -40,8 +42,9 @@ public class TelegramService implements MessageService {
     }
 
     @Override
-    public boolean loginInMessenger(SimpleMessageService simpleMessageService) {
-        new Telegram(simpleMessageService);
+    public boolean loginInMessenger(SimpleMessageService messageService) {
+        simpleMessageService = messageService;
+        new Telegram(messageService);
         return true;
     }
 
@@ -70,6 +73,7 @@ public class TelegramService implements MessageService {
             e.printStackTrace();
         }
         if (userId != 0L) {
+            simpleMessageService.setTelegramIdByPhone(userId, simpleMessage.getReceiverPhone());
             sendMessage(String.valueOf(userId), simpleMessage);
             return true;
         }

@@ -16,7 +16,6 @@ import it.tdlight.jni.TdApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -25,8 +24,6 @@ public class Telegram {
     private static final TdApi.MessageSender ADMIN_ID = new TdApi.MessageSenderUser(489214541);
 
     public static final Logger LOG = LoggerFactory.getLogger(Telegram.class);
-
-    public static final JFrame QRCodeFrame = new JFrame();
 
     private static SpringTelegramClient client;
 
@@ -163,7 +160,6 @@ public class Telegram {
                     throw new TelegramPhoneNumberNotFoundException("+" + simpleMessage.getReceiverPhone());
                 }
             }
-            simpleMessageService.setTelegramIdByPhone(user.get().id, simpleMessage.getReceiverPhone());
             isSendedCommunicateMethod.setResult(user.get().id);
         }, Telegram::springHandleResultHandlingException);
     }
@@ -194,30 +190,10 @@ public class Telegram {
         TdApi.AuthorizationState authorizationState = update.authorizationState;
 
         if (authorizationState instanceof TdApi.AuthorizationStateReady) {
-            if (QRCodeFrame.isEnabled())
-                QRCodeFrame.dispose();
             LOG.info("Logged in Telegram");
             TelegramService.isLogined = true;
             TelegramService.sendLoginStatus(true);
-//            CommunicateMethod authState = null;
-//            try {
-//                authState = TelegramService.communicateMethods.take();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            authState.setResult(authorizationState);
-//        } else if (authorizationState instanceof TdApi.AuthorizationStateWaitOtherDeviceConfirmation) {
-//            if (QRCodeFrame.isEnabled())
-//                QRCodeFrame.dispose();
-//            LOG.info("Waiting QR");
-//            TelegramService.isLogined = false;
-//            CommunicateMethod authState = null;
-//            try {
-//                authState = TelegramService.communicateMethods.take();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            authState.setResult(authorizationState);
+
         } else if (authorizationState instanceof TdApi.AuthorizationStateClosing) {
             LOG.info("Closing...");
         } else if (authorizationState instanceof TdApi.AuthorizationStateClosed) {

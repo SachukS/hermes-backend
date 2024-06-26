@@ -1,17 +1,10 @@
 package com.hysens.hermes.whatsapp.listener;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.MultiFormatWriter;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.model.enums.MessengerEnum;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.whatsapp.WhatsAppService;
-import com.hysens.hermes.whatsapp.utils.CommunicateMethod;
 import it.auties.whatsapp.api.DisconnectReason;
 import it.auties.whatsapp.listener.Listener;
 import it.auties.whatsapp.model.action.Action;
@@ -23,10 +16,6 @@ import it.auties.whatsapp.model.message.model.MessageStatus;
 import it.auties.whatsapp.model.message.standard.TextMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-
-import static com.hysens.hermes.whatsapp.auth.WhatsAppLogin.QRCodeFrame;
 
 public class WhatsAppListener implements Listener {
 
@@ -63,19 +52,10 @@ public class WhatsAppListener implements Listener {
 
     @Override
     public void onLoggedIn() {
-        if (QRCodeFrame.isEnabled())
-            QRCodeFrame.dispose();
         LOG.info("Logged in WhatsApp");
         WhatsAppService.isLogined = true;
         WhatsAppService.sendLoginStatus(true);
         Listener.super.onLoggedIn();
-//        CommunicateMethod authState = null;
-//        try {
-//            authState = WhatsAppService.communicateMethods.take();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        authState.setResult("Logged in WhatsApp");
     }
 
     @Override
@@ -107,12 +87,4 @@ public class WhatsAppListener implements Listener {
         Listener.super.onAction(action, messageIndexInfo);
     }
 
-    private static BitMatrix createMatrix(String qr, int size, int margin) {
-        try {
-            MultiFormatWriter writer = new MultiFormatWriter();
-            return writer.encode(qr, BarcodeFormat.QR_CODE, size, size, Map.of(EncodeHintType.MARGIN, margin, EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L));
-        } catch (WriterException var4) {
-            throw new UnsupportedOperationException("Cannot create qr code", var4);
-        }
-    }
 }
