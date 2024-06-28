@@ -1,5 +1,6 @@
 package com.hysens.hermes.telegram.service;
 
+import com.hysens.hermes.common.model.Partner;
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.service.MessageService;
 import com.hysens.hermes.common.service.SimpleMessageService;
@@ -7,7 +8,6 @@ import com.hysens.hermes.telegram.client.SpringClientInteraction;
 import com.hysens.hermes.telegram.client.Telegram;
 import com.hysens.hermes.telegram.config.CommunicateMethod;
 import com.hysens.hermes.telegram.exception.TelegramNotConnectedException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -21,9 +21,11 @@ public class TelegramService implements MessageService {
     public static SimpMessagingTemplate messagingTemplate;
     private static SimpleMessageService simpleMessageService;
     @Override
-    public void initWs(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
+    public void initWs(SimpMessagingTemplate simpMessagingTemplate, SimpleMessageService messageService) {
+        messagingTemplate = simpMessagingTemplate;
+        simpleMessageService = messageService;
         messagingTemplate.convertAndSend("/messenger/telegram/isLoginned", isLogined);
+        new Telegram(messageService);
     }
 
     public static void sendLoginStatus(boolean loginStatus) {
@@ -42,9 +44,8 @@ public class TelegramService implements MessageService {
     }
 
     @Override
-    public boolean loginInMessenger(SimpleMessageService messageService) {
-        simpleMessageService = messageService;
-        new Telegram(messageService);
+    public boolean loginInMessenger(Partner partner) {
+        Telegram.loginClient(partner);
         return true;
     }
 

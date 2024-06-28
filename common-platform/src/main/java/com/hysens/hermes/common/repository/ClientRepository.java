@@ -24,11 +24,12 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
             "FROM Client cl " +
             "LEFT JOIN cl.lastMessage message " +
             "WHERE (:status IS NULL OR message.messageStatus = :status) " +
+            "AND (cl.partnerId = :partnerId) " +
             "AND (:phoneNumber IS NULL OR cl.phone LIKE CONCAT('%', :phoneNumber, '%')) " +
             "AND (:text IS NULL OR LOWER(message.message) LIKE LOWER(CONCAT('%', :text, '%'))) " +
             "AND (:name IS NULL OR LOWER(cl.name) LIKE LOWER(CONCAT('%', :name, '%'))) "
     )
-    Page<Client> findAllByCriteria(@Param("status") MessageStatusEnum status, @Param("phoneNumber") String phoneNumber,
+    Page<Client> findAllByCriteria(@Param("partnerId") long partnerId, @Param("status") MessageStatusEnum status, @Param("phoneNumber") String phoneNumber,
                                    @Param("text") String text, @Param("name") String name, Pageable pageable);
 
 }

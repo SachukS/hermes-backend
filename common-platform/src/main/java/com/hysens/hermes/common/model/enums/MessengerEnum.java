@@ -1,6 +1,5 @@
 package com.hysens.hermes.common.model.enums;
 
-import javax.persistence.*;
 import java.util.Arrays;
 
 public enum MessengerEnum {

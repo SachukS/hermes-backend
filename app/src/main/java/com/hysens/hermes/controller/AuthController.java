@@ -98,6 +98,7 @@ public class AuthController {
 
         Partner partner = new Partner();
         partner.setEmail(signUpRequest.getEmail());
+        partner.setPhone(signUpRequest.getPhone());
 
         user.setPartner(partner);
 

@@ -2,7 +2,6 @@ package com.hysens.hermes.common.util;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
-
 import java.util.Arrays;
 import java.util.List;
 

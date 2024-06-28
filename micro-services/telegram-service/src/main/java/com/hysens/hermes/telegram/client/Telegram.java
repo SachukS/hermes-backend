@@ -1,77 +1,97 @@
 package com.hysens.hermes.telegram.client;
 
+import com.hysens.hermes.common.model.Partner;
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.model.enums.MessageStatusEnum;
 import com.hysens.hermes.common.model.enums.MessengerEnum;
-import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.telegram.config.CommunicateMethod;
-import com.hysens.hermes.telegram.exception.TelegramChatWithUserNotFoundException;
 import com.hysens.hermes.telegram.exception.TelegramPhoneNumberNotFoundException;
 import com.hysens.hermes.telegram.service.TelegramService;
+import it.tdlight.Init;
+import it.tdlight.Log;
+import it.tdlight.Slf4JLogMessageHandler;
 import it.tdlight.client.*;
-import it.tdlight.common.Init;
-import it.tdlight.common.utils.CantLoadLibrary;
 import it.tdlight.jni.TdApi;
+import it.tdlight.util.UnsupportedNativeLibraryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class Telegram {
-    private static SimpleMessageService simpleMessageService;
-    private static final TdApi.MessageSender ADMIN_ID = new TdApi.MessageSenderUser(489214541);
-
+public class Telegram implements AutoCloseable {
     public static final Logger LOG = LoggerFactory.getLogger(Telegram.class);
+    private static SimpleTelegramClient client;
+    public static SimpleTelegramClientFactory simpleTelegramClientFactory = new SimpleTelegramClientFactory();
+    private static SimpleMessageService simpleMessageService;
+    public static ExecutorService blockingExecutor = Executors.newSingleThreadExecutor();
+    private static ClientInteraction clientInteraction;
 
-    private static SpringTelegramClient client;
 
     public Telegram(SimpleMessageService messageService) {
         try {
-            Init.start();
-        } catch (CantLoadLibrary cantLoadLibrary) {
-            cantLoadLibrary.printStackTrace();
+            Init.init();
+        } catch (UnsupportedNativeLibraryException e) {
+            throw new RuntimeException(e);
         }
+        Log.setLogMessageHandler(1, new Slf4JLogMessageHandler());
 
         simpleMessageService = messageService;
 
-        APIToken apiToken = new APIToken(9234724, "990cded7571d97f83502e39b1793b63b");
 
+    }
+
+    public static void loginClient(Partner partner) {
+        APIToken apiToken = new APIToken(9234724, "990cded7571d97f83502e39b1793b63b");
         TDLibSettings settings = TDLibSettings.create(apiToken);
 
-        Path sessionPath = Paths.get("hermes-tdlight-session");
+        Path sessionPath = Paths.get("tdlight-session-"+partner.getPhone());
         settings.setDatabaseDirectoryPath(sessionPath.resolve("data"));
         settings.setDownloadedFilesDirectoryPath(sessionPath.resolve("downloads"));
 
-        client = new SpringTelegramClient(settings);
+        SimpleTelegramClientBuilder clientBuilder = simpleTelegramClientFactory.builder(settings);
 
-        AuthenticationData authenticationData = AuthenticationData.qrCode();
+        // Configure the authentication info
+        // Replace with AuthenticationSupplier.consoleLogin(), or .user(xxx), or .bot(xxx);
+        SimpleAuthenticationSupplier<?> authenticationData = AuthenticationSupplier.qrCode();
+
 
         // Add an example update handler that prints when the bot is started
-        client.addUpdateHandler(TdApi.UpdateAuthorizationState.class, Telegram::onUpdateAuthorizationState);
+        clientBuilder.addUpdateHandler(TdApi.UpdateAuthorizationState.class, Telegram::onUpdateAuthorizationState);
 
+        clientBuilder.addUpdateHandler(TdApi.UpdateChatReadOutbox.class, Telegram::onUpdateChatReadOutbox);
+
+        clientBuilder.addUpdateHandler(TdApi.UpdateMessageSendSucceeded.class, Telegram::onUpdateMessageSendSucceeded);
+
+        clientBuilder.addUpdateHandler(TdApi.UpdateMessageSendFailed.class, Telegram::onUpdateMessageSendFailed);
         // Add an example update handler that prints every received message
-        client.addUpdateHandler(TdApi.UpdateChatReadOutbox.class, Telegram::onUpdateChatReadOutbox);
+        clientBuilder.addUpdateHandler(TdApi.UpdateNewMessage.class, Telegram::onUpdateNewMessage);
 
-        client.addUpdateHandler(TdApi.UpdateNewMessage.class, Telegram::onUpdateNewMessage);
+        //clientBuilder.setClientInteraction(clientInteraction);
 
-        client.addUpdateHandler(TdApi.UpdateMessageSendSucceeded.class, Telegram::onUpdateMessageSendSucceeded);
+        // Build the client
+        client = clientBuilder.build(authenticationData);
+        clientInteraction = new SpringClientInteraction(blockingExecutor, client);
+        client.setClientInteraction(clientInteraction);
+    }
 
-        client.addUpdateHandler(TdApi.UpdateMessageSendFailed.class, Telegram::onUpdateMessageSendFailed);
+    @Override
+    public void close() throws Exception {
+        client.close();
+    }
 
-        client.start(authenticationData);
+    public SimpleTelegramClient getClient() {
+        return client;
+    }
 
-        TdApi.SetLogVerbosityLevel level = new TdApi.SetLogVerbosityLevel(1);
-        client.send(level, (ok) -> {
-            LOG.info("Verbosity level setted to 1");
-        }, throwable -> {});
-//        try {
-//            client.waitForExit();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+    private static void onUpdateChatReadOutbox(TdApi.UpdateChatReadOutbox update) {
+        long chatId = update.chatId;
+        long messageId = update.lastReadOutboxMessageId;
 
+        simpleMessageService.setReadStatusInTelegram(chatId);
     }
     private static void onUpdateMessageSendFailed(TdApi.UpdateMessageSendFailed update) {
         SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(String.valueOf(update.oldMessageId));
@@ -85,6 +105,30 @@ public class Telegram {
         simpleMessageService.save(simpleMessage);
     }
 
+    private static void onUpdateAuthorizationState(TdApi.UpdateAuthorizationState update) {
+        TdApi.AuthorizationState authorizationState = update.authorizationState;
+
+        if (authorizationState instanceof TdApi.AuthorizationStateReady) {
+            LOG.info("Logged in Telegram");
+            TelegramService.isLogined = true;
+            TelegramService.sendLoginStatus(true);
+
+        } else if (authorizationState instanceof TdApi.AuthorizationStateClosing) {
+            LOG.info("Closing...");
+        } else if (authorizationState instanceof TdApi.AuthorizationStateClosed) {
+            TelegramService.isLogined = false;
+            TelegramService.sendLoginStatus(false);
+            LOG.info("Closed");
+        } else if (authorizationState instanceof TdApi.AuthorizationStateLoggingOut) {
+            TelegramService.isLogined = false;
+            TelegramService.sendLoginStatus(false);
+            LOG.info("Logging out...");
+        }
+    }
+
+    public static TdApi.User getMe() {
+        return client.getMe();
+    }
     private static void onUpdateNewMessage(TdApi.UpdateNewMessage update) {
         // Get the message content
         var messageContent = update.message.content;
@@ -118,7 +162,6 @@ public class Telegram {
             });
         }
     }
-
     public static String logout() {
         client.send(new TdApi.LogOut(), result -> {
             LOG.info("Telegram Logged Out");
@@ -127,25 +170,6 @@ public class Telegram {
         return "Telegram Logged Out";
     }
 
-    private static void onUpdateChatReadOutbox(TdApi.UpdateChatReadOutbox update) {
-        long chatId = update.chatId;
-        long messageId = update.lastReadOutboxMessageId;
-
-        simpleMessageService.setReadStatusInTelegram(chatId);
-    }
-
-    private static class StopCommandHandler implements CommandHandler {
-
-        @Override
-        public void onCommand(TdApi.Chat chat, TdApi.MessageSender commandSender, String arguments) {
-            // Check if the sender is the admin
-            if (isAdmin(commandSender)) {
-                // Stop the com.hysens.hermes.telegram.client
-                System.out.println("Received stop command. closing...");
-                client.sendClose();
-            }
-        }
-    }
     public static void findUser(SimpleMessage simpleMessage){
         client.send(new TdApi.SearchUserByPhoneNumber("+" + simpleMessage.getReceiverPhone()), user -> {
             CommunicateMethod isSendedCommunicateMethod = null;
@@ -161,7 +185,7 @@ public class Telegram {
                 }
             }
             isSendedCommunicateMethod.setResult(user.get().id);
-        }, Telegram::springHandleResultHandlingException);
+        });
     }
 
     public static void createChatAndSend(String userId, SimpleMessage simpleMessage) {
@@ -172,8 +196,8 @@ public class Telegram {
     }
 
     private static void sendMessage(long id, String title, SimpleMessage simpleMessage) {
-        TdApi.InputMessageContent content = new TdApi.InputMessageText(new TdApi.FormattedText(simpleMessage.getMessage(), null), false, true);
-        client.send(new TdApi.SendMessage(id, 0, 0, null, null, content), result -> {
+        TdApi.InputMessageContent content = new TdApi.InputMessageText(new TdApi.FormattedText(simpleMessage.getMessage(), null), new TdApi.LinkPreviewOptions(), true);
+        client.send(new TdApi.SendMessage(id, 0, new TdApi.InputMessageReplyToMessage(), null, null, content), result -> {
             TdApi.Message sendedMessage = result.get();
             simpleMessage.setMessageSpecId(String.valueOf(sendedMessage.id));
             simpleMessage.setMessenger(MessengerEnum.TELEGRAM);
@@ -182,33 +206,4 @@ public class Telegram {
         });
     }
 
-    private static void springHandleResultHandlingException(Throwable ex) {
-        LOG.error(ex.getMessage());
-    }
-
-    private static void onUpdateAuthorizationState(TdApi.UpdateAuthorizationState update) {
-        TdApi.AuthorizationState authorizationState = update.authorizationState;
-
-        if (authorizationState instanceof TdApi.AuthorizationStateReady) {
-            LOG.info("Logged in Telegram");
-            TelegramService.isLogined = true;
-            TelegramService.sendLoginStatus(true);
-
-        } else if (authorizationState instanceof TdApi.AuthorizationStateClosing) {
-            LOG.info("Closing...");
-        } else if (authorizationState instanceof TdApi.AuthorizationStateClosed) {
-            TelegramService.isLogined = false;
-            TelegramService.sendLoginStatus(false);
-            LOG.info("Closed");
-        } else if (authorizationState instanceof TdApi.AuthorizationStateLoggingOut) {
-            TelegramService.isLogined = false;
-            TelegramService.sendLoginStatus(false);
-            LOG.info("Logging out...");
-        }
-    }
-
-    private static boolean isAdmin(TdApi.MessageSender sender) {
-        return sender.equals(ADMIN_ID);
-    }
 }
-

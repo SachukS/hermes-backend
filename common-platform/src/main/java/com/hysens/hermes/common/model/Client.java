@@ -26,6 +26,7 @@ public class Client {
     private String phone;
     private String email;
     private ChatStatusEnum chatStatus = ChatStatusEnum.ACTIVE;
+    private long partnerId;
     @OneToOne(fetch = FetchType.EAGER, targetEntity = SimpleMessage.class, cascade = CascadeType.ALL)
     @JoinColumn(name = "last_message_id")
     private SimpleMessage lastMessage;
@@ -70,6 +71,14 @@ public class Client {
             exist.add(messenger);
             this.setMessengers(exist);
         }
+    }
+
+    public long getPartnerId() {
+        return partnerId;
+    }
+
+    public void setPartnerId(long partnerId) {
+        this.partnerId = partnerId;
     }
 
     public long getId() {

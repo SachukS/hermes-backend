@@ -1,5 +1,6 @@
 package com.hysens.hermes.whatsapp;
 
+import com.hysens.hermes.common.model.Partner;
 import com.hysens.hermes.common.model.SimpleMessage;
 import com.hysens.hermes.common.pojo.MessageRecipientInfo;
 import com.hysens.hermes.common.service.MessageService;
@@ -27,7 +28,7 @@ public class WhatsAppService implements MessageService {
     public static SimpMessagingTemplate messagingTemplate;
 
     @Override
-    public void initWs(SimpMessagingTemplate messagingTemplate) {
+    public void initWs(SimpMessagingTemplate messagingTemplate, SimpleMessageService simpleMessageService) {
         this.messagingTemplate = messagingTemplate;
         messagingTemplate.convertAndSend("/messenger/whatsapp/isLoginned", isLogined);
     }
@@ -48,7 +49,7 @@ public class WhatsAppService implements MessageService {
     }
 
     @Override
-    public boolean loginInMessenger(SimpleMessageService simpleMessageService) {
+    public boolean loginInMessenger(Partner partner) {
         WhatsAppLogin.login(simpleMessageService);
         return true;
     }
