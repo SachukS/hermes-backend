@@ -1,6 +1,6 @@
 package com.hysens.hermes.common.model.enums;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "phone_status_type_enum")

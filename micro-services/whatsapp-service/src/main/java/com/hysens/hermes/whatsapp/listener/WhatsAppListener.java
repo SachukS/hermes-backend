@@ -10,8 +10,10 @@ import it.auties.whatsapp.listener.Listener;
 import it.auties.whatsapp.model.action.Action;
 import it.auties.whatsapp.model.chat.Chat;
 import it.auties.whatsapp.model.contact.Contact;
+import it.auties.whatsapp.model.info.ChatMessageInfo;
 import it.auties.whatsapp.model.info.MessageIndexInfo;
 import it.auties.whatsapp.model.info.MessageInfo;
+import it.auties.whatsapp.model.info.MessageStatusInfo;
 import it.auties.whatsapp.model.message.model.MessageStatus;
 import it.auties.whatsapp.model.message.standard.TextMessage;
 import org.slf4j.Logger;
@@ -36,17 +38,21 @@ public class WhatsAppListener implements Listener {
                 .content() instanceof TextMessage textMessage)) {
             return;
         }
-        if (!info.fromMe()) {
-            LOG.warn("Received new message: " + textMessage.text() + " from:" + info.senderJid().toPhoneNumber().substring(1));
 
-            SimpleMessage simpleMessage = new SimpleMessage();
-            simpleMessage.setMessage(textMessage.text());
-            simpleMessage.setSenderPhone(info.senderJid().toPhoneNumber().substring(1));
-            simpleMessage.setFromMe(false);
-            simpleMessage.setMessenger(MessengerEnum.WHATSAPP);
-            simpleMessage.setMessageStatus(MessageStatusEnum.NEW);
-            simpleMessageService.saveWithoutClientId(simpleMessage, 0L);
+        if (info instanceof ChatMessageInfo chatMessageInfo) {
+            if (!chatMessageInfo.fromMe()) {
+                LOG.warn("Received new message: " + textMessage.text() + " from:" + chatMessageInfo.senderJid().toPhoneNumber().substring(1));
+
+                SimpleMessage simpleMessage = new SimpleMessage();
+                simpleMessage.setMessage(textMessage.text());
+                simpleMessage.setSenderPhone(chatMessageInfo.senderJid().toPhoneNumber().substring(1));
+                simpleMessage.setFromMe(false);
+                simpleMessage.setMessenger(MessengerEnum.WHATSAPP);
+                simpleMessage.setMessageStatus(MessageStatusEnum.NEW);
+                simpleMessageService.saveWithoutClientId(simpleMessage, 0L);
+            }
         }
+
         Listener.super.onNewMessage(info);
     }
 
@@ -67,18 +73,20 @@ public class WhatsAppListener implements Listener {
     }
 
     @Override
-    public void onAnyMessageStatus(Chat chat, Contact contact, MessageInfo info, MessageStatus status) {
-        if (status.toString().equals("DELIVERED")) {
-            SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(info.key().id());
-            simpleMessage.setMessageStatus(MessageStatusEnum.SENT);
-            simpleMessageService.save(simpleMessage);
+    public void onMessageStatus(MessageInfo info) {
+        if (info instanceof ChatMessageInfo chatMessageInfo) {
+            if (chatMessageInfo.status().name().equals("DELIVERED")) {
+                SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(chatMessageInfo.key().id());
+                simpleMessage.setMessageStatus(MessageStatusEnum.SENT);
+                simpleMessageService.save(simpleMessage);
+            }
+            if (chatMessageInfo.status().name().equals("READ")) {
+                SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(chatMessageInfo.key().id());
+                simpleMessage.setMessageStatus(MessageStatusEnum.READ);
+                simpleMessageService.save(simpleMessage);
+            }
         }
-        if (status.toString().equals("READ")) {
-            SimpleMessage simpleMessage = simpleMessageService.findByMessageSpecId(info.key().id());
-            simpleMessage.setMessageStatus(MessageStatusEnum.READ);
-            simpleMessageService.save(simpleMessage);
-        }
-        Listener.super.onAnyMessageStatus(chat, contact, info, status);
+        Listener.super.onMessageStatus(info);
     }
 
     @Override

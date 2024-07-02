@@ -2,7 +2,7 @@ package com.hysens.hermes.common.model;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;

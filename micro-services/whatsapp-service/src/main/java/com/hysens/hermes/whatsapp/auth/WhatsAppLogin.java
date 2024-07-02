@@ -1,5 +1,6 @@
 package com.hysens.hermes.whatsapp.auth;
 
+import com.hysens.hermes.common.model.Partner;
 import com.hysens.hermes.common.service.SimpleMessageService;
 import com.hysens.hermes.whatsapp.listener.WhatsAppListener;
 import com.hysens.hermes.whatsapp.services.MessageSender;
@@ -14,20 +15,23 @@ public class WhatsAppLogin {
 
     public static String WhatsappQr = "";
 
-    public static void login(SimpleMessageService simpleMessageService) {
+    public static void login(SimpleMessageService simpleMessageService, Partner partner) {
         String homePath = System.getProperty("user.home");
         Path web4jDirectory = Paths.get(homePath + "\\.whatsappweb4j");
         Whatsapp api;
-
-        if (Files.exists(web4jDirectory)) {
-            api = Whatsapp.webBuilder()
-                    .lastConnection()
-                    .registered().get();
-        } else {
-            api = Whatsapp.webBuilder()
-                    .lastConnection()
-                    .unregistered(onQRCode());
-        }
+        api =Whatsapp.webBuilder()
+                .newConnection()
+                .name(partner.getPhone())
+                .unregistered(onQRCode());
+//        if (Files.exists(web4jDirectory)) {
+//            api = Whatsapp.webBuilder()
+//                    .lastConnection()
+//                    .registered().get();
+//        } else {
+//            api = Whatsapp.webBuilder()
+//                    .lastConnection()
+//                    .unregistered(onQRCode());
+//        }
         api.addListener(new WhatsAppListener(simpleMessageService));
         new MessageSender(api);
 

@@ -2,7 +2,7 @@ package com.hysens.hermes.common.model;
 
 import com.hysens.hermes.common.model.enums.RoleEnum;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "role")

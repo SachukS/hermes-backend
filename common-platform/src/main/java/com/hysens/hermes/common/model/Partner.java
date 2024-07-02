@@ -4,7 +4,7 @@ import com.hysens.hermes.common.model.enums.MessengerEnum;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;

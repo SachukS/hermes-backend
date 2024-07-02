@@ -6,9 +6,7 @@ import com.hysens.hermes.service.message.MessageServiceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-
-import javax.annotation.PostConstruct;
-
+import jakarta.annotation.PostConstruct;
 // controller for handling ws (in future)
 @Controller
 public class MessengerWsController {

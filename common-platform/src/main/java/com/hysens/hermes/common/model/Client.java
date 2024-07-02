@@ -4,10 +4,10 @@ import com.hysens.hermes.common.model.enums.ChatStatusEnum;
 import com.hysens.hermes.common.model.enums.CountryEnum;
 import com.hysens.hermes.common.model.enums.MessengerEnum;
 import com.hysens.hermes.common.util.StringListConverter;
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

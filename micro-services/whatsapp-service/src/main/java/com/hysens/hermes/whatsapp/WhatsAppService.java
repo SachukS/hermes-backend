@@ -50,7 +50,7 @@ public class WhatsAppService implements MessageService {
 
     @Override
     public boolean loginInMessenger(Partner partner) {
-        WhatsAppLogin.login(simpleMessageService);
+        WhatsAppLogin.login(simpleMessageService, partner);
         return true;
     }
 

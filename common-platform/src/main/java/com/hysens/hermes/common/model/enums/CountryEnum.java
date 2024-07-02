@@ -1,6 +1,6 @@
 package com.hysens.hermes.common.model.enums;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "country_enum")

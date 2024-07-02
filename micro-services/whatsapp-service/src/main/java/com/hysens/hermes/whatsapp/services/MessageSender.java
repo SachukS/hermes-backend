@@ -6,8 +6,9 @@ import com.hysens.hermes.whatsapp.WhatsAppService;
 import com.hysens.hermes.whatsapp.exceptions.NotInMemoryException;
 import it.auties.whatsapp.api.Whatsapp;
 import it.auties.whatsapp.model.chat.Chat;
-import it.auties.whatsapp.model.contact.ContactJid;
 import it.auties.whatsapp.model.info.MessageInfo;
+import it.auties.whatsapp.model.jid.Jid;
+import it.auties.whatsapp.model.response.HasWhatsappResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +23,8 @@ public class MessageSender {
 
     public static SimpleMessage sendMessage(SimpleMessage simpleMessage) {
         String contactJID = simpleMessage.getReceiverPhone() + "@s.whatsapp.net";
-        Chat chat = Chat.ofJid(ContactJid.of(contactJID));
-        MessageInfo messageInfo = api.sendMessage(chat, simpleMessage.getMessage()).join();
-        simpleMessage.setMessageSpecId(messageInfo.key().id());
+        MessageInfo messageInfo = api.sendMessage(Jid.of(contactJID), simpleMessage.getMessage()).join();
+        simpleMessage.setMessageSpecId(messageInfo.id());
         simpleMessage.setMessenger(MessengerEnum.WHATSAPP);
         LOG.info("Message: " + simpleMessage.getMessage() + " to " + simpleMessage.getReceiverPhone() + " SENDED using WhatsApp");
         return simpleMessage;
@@ -33,7 +33,7 @@ public class MessageSender {
     public static boolean isChatExists(String number) {
         String contactJID = number + "@s.whatsapp.net";
         try {
-            boolean isChatExist = !api.store().findChatByJid(ContactJid.of(contactJID))
+            boolean isChatExist = !api.store().findChatByJid(Jid.of(contactJID))
                     .orElseThrow(() -> new NotInMemoryException("Current chat doesn't exist: " + contactJID)).messages().isEmpty();
             return isChatExist;
         } catch (NotInMemoryException e) {
@@ -46,13 +46,13 @@ public class MessageSender {
         try
         {
             String contactJID = number + "@s.whatsapp.net";
-            Chat chat = Chat.ofJid(ContactJid.of(contactJID));
+            HasWhatsappResponse response = api.hasWhatsapp(Jid.of(contactJID)).get();
+            return response.hasWhatsapp();
         }
         catch (Exception e) {
             LOG.error(e.getMessage());
             return false;
         }
-        return true;
     }
 
     public static String logout() {
