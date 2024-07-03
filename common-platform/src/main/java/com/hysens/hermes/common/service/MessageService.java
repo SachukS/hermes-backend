@@ -11,7 +11,7 @@ public interface MessageService {
 
     boolean loginInMessenger(Partner partner);
 
-    boolean isMessengerLogined();
+    boolean isMessengerLogined(String partnerPhone);
 
     String getQR();
 

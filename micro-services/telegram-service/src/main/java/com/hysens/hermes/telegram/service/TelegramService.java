@@ -8,6 +8,7 @@ import com.hysens.hermes.telegram.client.SpringClientInteraction;
 import com.hysens.hermes.telegram.client.Telegram;
 import com.hysens.hermes.telegram.config.CommunicateMethod;
 import com.hysens.hermes.telegram.exception.TelegramNotConnectedException;
+import it.tdlight.jni.TdApi;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -39,8 +40,15 @@ public class TelegramService implements MessageService {
     }
 
     @Override
-    public boolean isMessengerLogined() {
-        return isLogined;
+    public boolean isMessengerLogined(String partnerPhone) {
+        try {
+            TdApi.User me = Telegram.getMe();
+            if (me.phoneNumber.equals(partnerPhone))
+                return true;
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
     }
 
     @Override
@@ -61,7 +69,7 @@ public class TelegramService implements MessageService {
 
     @Override
     public boolean sendIfChatWithUserExists(SimpleMessage simpleMessage) {
-        if (!isMessengerLogined())
+        if (!isLogined)
             throw new TelegramNotConnectedException("NOT_CONNECTED", "Telegram not connected", HttpStatus.INTERNAL_SERVER_ERROR);
         Telegram.findUser(simpleMessage);
         long userId = 0L;

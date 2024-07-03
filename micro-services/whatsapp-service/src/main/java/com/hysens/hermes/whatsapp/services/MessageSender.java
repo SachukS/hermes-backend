@@ -30,6 +30,14 @@ public class MessageSender {
         return simpleMessage;
     }
 
+    public static boolean isLoginned(String phone) {
+        try {
+            return api.store().phoneNumber().orElseThrow().toString().equals(phone);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static boolean isChatExists(String number) {
         String contactJID = number + "@s.whatsapp.net";
         try {

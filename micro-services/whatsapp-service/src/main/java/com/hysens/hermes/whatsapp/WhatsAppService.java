@@ -28,8 +28,9 @@ public class WhatsAppService implements MessageService {
     public static SimpMessagingTemplate messagingTemplate;
 
     @Override
-    public void initWs(SimpMessagingTemplate messagingTemplate, SimpleMessageService simpleMessageService) {
+    public void initWs(SimpMessagingTemplate messagingTemplate, SimpleMessageService messageService) {
         this.messagingTemplate = messagingTemplate;
+        simpleMessageService = messageService;
         messagingTemplate.convertAndSend("/messenger/whatsapp/isLoginned", isLogined);
     }
 
@@ -44,8 +45,8 @@ public class WhatsAppService implements MessageService {
     }
 
     @Override
-    public boolean isMessengerLogined() {
-        return isLogined;
+    public boolean isMessengerLogined(String partnerPhone) {
+        return MessageSender.isLoginned(partnerPhone);
     }
 
     @Override
@@ -67,7 +68,7 @@ public class WhatsAppService implements MessageService {
     }
     @Override
     public boolean sendIfChatWithUserExists(SimpleMessage simpleMessage) {
-        if (!isMessengerLogined())
+        if (!isLogined)
             throw new WhatsappNotConnectedException("WHATSAPP_NOT_CONNECTED", "Whatsapp not connected", HttpStatus.INTERNAL_SERVER_ERROR);
         MessageRecipientInfo info = new MessageRecipientInfo();
         if (MessageSender.isChatExists(simpleMessage.getReceiverPhone())) {

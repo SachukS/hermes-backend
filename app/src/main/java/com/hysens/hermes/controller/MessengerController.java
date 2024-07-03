@@ -64,7 +64,7 @@ public class MessengerController {
     @GetMapping("/whatsapp/login/qr")
     public ResponseEntity<byte[]> getWaQr() throws WriterException, IOException {
         String response = new MessageServiceFactory().from(MessengerEnum.WHATSAPP).getQR();
-        if (!response.equals("Logged in WhatsApp")) {
+        if (!response.equals("Logged in WhatsApp") && !response.isEmpty()) {
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
             BitMatrix bitMatrix = qrCodeWriter.encode(response, BarcodeFormat.QR_CODE, 200, 200);
 
@@ -95,14 +95,16 @@ public class MessengerController {
         return ResponseEntity.accepted().body(null);
     }
 
-    @GetMapping("/telegram/islogined")
-    public boolean isTelegramLogined() {
-        return new MessageServiceFactory().from(MessengerEnum.TELEGRAM).isMessengerLogined();
+    @GetMapping("/telegram/islogined/{id}")
+    public boolean isTelegramLogined(@PathVariable("id") long partnerId) {
+        Partner partner = partnerRepository.findById(partnerId).get();
+        return new MessageServiceFactory().from(MessengerEnum.TELEGRAM).isMessengerLogined(partner.getPhone());
     }
 
-    @GetMapping("/whatsapp/islogined")
-    public boolean isWhatsappLogined() {
-        return new MessageServiceFactory().from(MessengerEnum.WHATSAPP).isMessengerLogined();
+    @GetMapping("/whatsapp/islogined/{id}")
+    public boolean isWhatsappLogined(@PathVariable("id") long partnerId) {
+        Partner partner = partnerRepository.findById(partnerId).get();
+        return new MessageServiceFactory().from(MessengerEnum.WHATSAPP).isMessengerLogined(partner.getPhone());
     }
 
     @PostMapping("/contacts")

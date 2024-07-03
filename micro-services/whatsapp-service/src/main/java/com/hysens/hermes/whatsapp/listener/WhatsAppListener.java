@@ -66,7 +66,7 @@ public class WhatsAppListener implements Listener {
 
     @Override
     public void onDisconnected(DisconnectReason reason) {
-        LOG.warn("Whatsapp disconnected.");
+        LOG.warn("Whatsapp disconnected. " + reason.toString());
         WhatsAppService.isLogined = false;
         WhatsAppService.sendLoginStatus(false);
         Listener.super.onDisconnected(reason);
